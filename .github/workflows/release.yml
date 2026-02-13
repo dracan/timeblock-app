@@ -1,0 +1,33 @@
+name: Build & Release
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx electron-builder --win portable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TimeBlocker-win-x64
+          path: release/*.exe
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.${{ github.run_number }}.0
+          name: Release 0.${{ github.run_number }}.0
+          files: release/*.exe
+          generate_release_notes: true
