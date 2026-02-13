@@ -53,3 +53,11 @@ Data serializes to markdown via `src/renderer/utils/markdown.ts`. Format: H1 for
 ### Drag Interaction State Machine (Timeline.tsx)
 
 `dragMode` tracks the current interaction: `none`, `creating`, `moving`, `resizing`. Global mousemove/mouseup listeners handle all drag operations. Supports multi-block dragging via Ctrl+click selection.
+
+## README Maintenance
+
+After making any change, check whether `README.md` needs to be updated. Specifically, update the README when:
+- Features are added, removed, or changed
+- Build/run commands or prerequisites change
+- The data storage format changes
+- The tech stack or major dependencies change
