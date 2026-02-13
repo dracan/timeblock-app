@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev      # Dev mode: compiles main process TS, starts Vite dev server (port 5173) + Electron
 npm run build    # Production build: compiles main process TS + Vite bundle to dist/
 npm start        # Run the built Electron app (requires build first)
+npm run pack     # Build + package as portable Windows exe (output in release/)
 ```
 
 No test runner or linter is configured.
