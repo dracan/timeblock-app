@@ -4,4 +4,3 @@ release/
 .vite/
 *.log
 .claude/
-screenshot-*.png
