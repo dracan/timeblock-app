@@ -244,6 +244,16 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     [entries, onEntriesChange]
   );
 
+  const handleToggleDone = useCallback(
+    (entryId: string) => {
+      const updated = entries.map((entry) =>
+        entry.id === entryId ? { ...entry, done: !entry.done } : entry
+      );
+      onEntriesChange(updated);
+    },
+    [entries, onEntriesChange]
+  );
+
   const handleDelete = useCallback(
     (entryId: string) => {
       const idsToDelete = selectedIds.size > 0 && selectedIds.has(entryId)
@@ -398,6 +408,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
             onTitleChange={(title) => handleTitleChange(entry.id, title)}
             onTitleBlur={() => setEditingId(null)}
             onTitleDoubleClick={() => setEditingId(entry.id)}
+            onToggleDone={() => handleToggleDone(entry.id)}
           />
         ))}
       </div>

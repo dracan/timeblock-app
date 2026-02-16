@@ -11,6 +11,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Drag to create** — Click and drag on the timeline to create a new block
 - **Move and resize** — Drag blocks to reposition them, or pull the edges to adjust duration
 - **Color-code** — Right-click any block to pick from 10 preset colors
+- **Done checkbox** — Click the checkbox on any block to mark it complete (turns green with a checkmark)
 - **Inline editing** — Click a block's title to rename it in place
 - **Multi-select** — Ctrl+click to select multiple blocks and move them together
 - **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
@@ -70,6 +71,7 @@ Each day is saved as a markdown file in your user data directory under `days/YYY
 ## 14:00 - 15:30 | Deep Work
 - **Color:** #2ecc40
 - **ID:** k9xyz8ghi
+- **Done:** true
 ```
 
 Files are fully readable and editable outside the app.

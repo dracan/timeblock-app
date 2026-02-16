@@ -162,10 +162,73 @@ body {
   padding: 4px 8px;
   height: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 2px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 6px;
   overflow: hidden;
+}
+
+.time-block-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Done checkbox */
+.time-block-checkbox {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 1px;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.time-block-checkbox:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.time-block-checkbox.checked {
+  background: #22c55e;
+  border-color: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.time-block-checkbox.checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.time-block.done .time-block-title {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+/* Compact checkbox */
+.time-block.compact .time-block-checkbox {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  margin-top: 2px;
+}
+
+.time-block.compact .time-block-checkbox.checked::after {
+  left: 2px;
+  top: 0px;
+  width: 4px;
+  height: 7px;
 }
 
 .time-block-title {
@@ -200,6 +263,8 @@ body {
 /* Compact time blocks (15-min) */
 .time-block.compact .time-block-content {
   padding: 0 6px;
+  align-items: center;
+  gap: 4px;
 }
 
 .time-block.compact .time-block-title {

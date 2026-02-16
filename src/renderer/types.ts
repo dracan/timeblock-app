@@ -4,6 +4,7 @@ export interface TimeEntry {
   startMinutes: number; // minutes from midnight
   endMinutes: number;   // minutes from midnight
   color: string;        // hex color
+  done?: boolean;
 }
 
 export interface ElectronAPI {

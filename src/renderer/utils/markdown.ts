@@ -18,7 +18,11 @@ export function entriesToMarkdown(entries: TimeEntry[], date: Date): string {
     const end = formatTime24(entry.endMinutes);
     md += `## ${start} - ${end} | ${entry.title}\n`;
     md += `- **Color:** ${entry.color}\n`;
-    md += `- **ID:** ${entry.id}\n\n`;
+    md += `- **ID:** ${entry.id}\n`;
+    if (entry.done) {
+      md += `- **Done:** true\n`;
+    }
+    md += `\n`;
   }
 
   return md;
@@ -38,6 +42,7 @@ export function markdownToEntries(md: string): TimeEntry[] {
     const afterMatch = md.slice(match.index + match[0].length);
     const colorMatch = afterMatch.match(/- \*\*Color:\*\* (#[0-9a-fA-F]{6})/);
     const idMatch = afterMatch.match(/- \*\*ID:\*\* (.+)/);
+    const doneMatch = afterMatch.match(/- \*\*Done:\*\* true/);
 
     entries.push({
       id: idMatch ? idMatch[1].trim() : Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
@@ -45,6 +50,7 @@ export function markdownToEntries(md: string): TimeEntry[] {
       startMinutes,
       endMinutes,
       color: colorMatch ? colorMatch[1] : '#4a9eff',
+      done: !!doneMatch,
     });
   }
 

@@ -13,6 +13,7 @@ interface TimeBlockProps {
   onTitleChange: (title: string) => void;
   onTitleBlur: () => void;
   onTitleDoubleClick: () => void;
+  onToggleDone: () => void;
 }
 
 export default function TimeBlock({
@@ -26,6 +27,7 @@ export default function TimeBlock({
   onTitleChange,
   onTitleBlur,
   onTitleDoubleClick,
+  onToggleDone,
 }: TimeBlockProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const top = minutesToPixels(entry.startMinutes, hourHeight);
@@ -41,7 +43,7 @@ export default function TimeBlock({
 
   return (
     <div
-      className={`time-block ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''}`}
+      className={`time-block ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''} ${entry.done ? 'done' : ''}`}
       style={{
         top,
         height,
@@ -62,30 +64,37 @@ export default function TimeBlock({
 
       {/* Content */}
       <div className="time-block-content">
-        {isEditing ? (
-          <input
-            ref={inputRef}
-            className="time-block-title-input"
-            value={entry.title}
-            onChange={(e) => onTitleChange(e.target.value)}
-            onBlur={onTitleBlur}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') onTitleBlur();
-              if (e.key === 'Escape') onTitleBlur();
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-          />
-        ) : (
-          <div className="time-block-title" onDoubleClick={onTitleDoubleClick}>
-            {entry.title}
-          </div>
-        )}
-        {!isCompact && (
-          <div className="time-block-time">
-            {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)} ({formatDuration(entry.endMinutes - entry.startMinutes)})
-          </div>
-        )}
+        <div
+          className={`time-block-checkbox ${entry.done ? 'checked' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleDone(); }}
+          onMouseDown={(e) => e.stopPropagation()}
+        />
+        <div className="time-block-text">
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              className="time-block-title-input"
+              value={entry.title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              onBlur={onTitleBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') onTitleBlur();
+                if (e.key === 'Escape') onTitleBlur();
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <div className="time-block-title" onDoubleClick={onTitleDoubleClick}>
+              {entry.title}
+            </div>
+          )}
+          {!isCompact && (
+            <div className="time-block-time">
+              {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)} ({formatDuration(entry.endMinutes - entry.startMinutes)})
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
