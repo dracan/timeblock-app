@@ -150,6 +150,7 @@ body {
 }
 
 .time-block.selected {
+  z-index: 20;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
