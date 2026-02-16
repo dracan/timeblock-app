@@ -99,6 +99,17 @@ body {
   background: var(--half-hour-line);
 }
 
+/* Current time indicator */
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ef4444;
+  pointer-events: none;
+  z-index: 5;
+}
+
 /* Creation preview */
 .creation-preview {
   position: absolute;

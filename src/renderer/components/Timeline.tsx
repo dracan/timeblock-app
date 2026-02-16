@@ -37,6 +37,10 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [colorMenu, setColorMenu] = useState<{ x: number; y: number; entryId: string } | null>(null);
   const [hourHeight, setHourHeight] = useState(DEFAULT_HOUR_HEIGHT);
+  const [currentMinutes, setCurrentMinutes] = useState(() => {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  });
   const timelineRef = useRef<HTMLDivElement>(null);
   const pendingScrollRef = useRef<{ timeAtCursor: number; cursorOffsetInContainer: number } | null>(null);
 
@@ -271,6 +275,16 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIds, editingId, entries, onEntriesChange]);
 
+  // Current time updater
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      setCurrentMinutes(now.getHours() * 60 + now.getMinutes());
+    };
+    const id = setInterval(update, 60000);
+    return () => clearInterval(id);
+  }, []);
+
   // Ctrl+mousewheel zoom
   useEffect(() => {
     const el = timelineRef.current;
@@ -358,6 +372,14 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
             <div className="half-hour-line" style={{ top: hourHeight / 2 }} />
           </div>
         ))}
+
+        {/* Current time indicator */}
+        {currentMinutes >= DAY_START_HOUR * 60 && currentMinutes <= DAY_END_HOUR * 60 && (
+          <div
+            className="current-time-line"
+            style={{ top: minutesToPixels(currentMinutes, hourHeight) }}
+          />
+        )}
 
         {/* Creation preview */}
         {creationPreview}
