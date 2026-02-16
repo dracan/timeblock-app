@@ -7,6 +7,8 @@ interface TimeBlockProps {
   hourHeight: number;
   isSelected: boolean;
   isEditing: boolean;
+  columnIndex?: number;
+  totalColumns?: number;
   onMouseDown: (e: React.MouseEvent) => void;
   onResizeStart: (e: React.MouseEvent, edge: 'top' | 'bottom') => void;
   onContextMenu: (e: React.MouseEvent) => void;
@@ -21,6 +23,8 @@ export default function TimeBlock({
   hourHeight,
   isSelected,
   isEditing,
+  columnIndex = 0,
+  totalColumns = 1,
   onMouseDown,
   onResizeStart,
   onContextMenu,
@@ -33,6 +37,8 @@ export default function TimeBlock({
   const top = minutesToPixels(entry.startMinutes, hourHeight);
   const height = minutesToPixels(entry.endMinutes, hourHeight) - top;
   const isCompact = height <= 20 * (hourHeight / DEFAULT_HOUR_HEIGHT);
+  const leftPercent = (columnIndex / totalColumns) * 100;
+  const widthPercent = (1 / totalColumns) * 100;
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -47,6 +53,8 @@ export default function TimeBlock({
       style={{
         top,
         height,
+        left: `${leftPercent}%`,
+        width: `calc(${widthPercent}% - 1px)`,
         backgroundColor: entry.color,
       }}
       onMouseDown={onMouseDown}

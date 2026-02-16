@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { TimeEntry } from '../types';
 import TimeBlock from './TimeBlock';
 import ColorMenu from './ColorMenu';
@@ -17,6 +17,7 @@ import {
   formatDuration,
   generateId,
 } from '../utils/time';
+import { computeOverlapLayout } from '../utils/overlap';
 
 interface TimelineProps {
   entries: TimeEntry[];
@@ -358,31 +359,59 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     el.scrollTop = minutesToPixels(9 * 60, newHourHeight);
   }, []);
 
-  // Creation preview
-  let creationPreview: React.ReactNode = null;
+  // Build layout entries (real entries + phantom creation preview entry)
+  const CREATION_PREVIEW_ID = '__creation_preview__';
+  let previewStartMin = 0;
+  let previewEndMin = 0;
   if (dragMode.type === 'creating') {
     const minY = Math.min(dragMode.startY, dragMode.currentY);
     const maxY = Math.max(dragMode.startY, dragMode.currentY);
     if (maxY - minY > 5) {
-      const startMin = snapToGrid(pixelsToMinutes(minY, hourHeight));
-      const endMin = snapToGrid(pixelsToMinutes(maxY, hourHeight));
-      creationPreview = (
-        <div
-          className="creation-preview"
-          style={{
-            top: minutesToPixels(Math.max(DAY_START_HOUR * 60, startMin), hourHeight),
-            height: minutesToPixels(Math.min(DAY_END_HOUR * 60, endMin), hourHeight) -
-              minutesToPixels(Math.max(DAY_START_HOUR * 60, startMin), hourHeight),
-          }}
-        >
-          <span className="creation-preview-time">
-            {formatTime(Math.max(DAY_START_HOUR * 60, startMin))} -{' '}
-            {formatTime(Math.min(DAY_END_HOUR * 60, endMin))}{' '}
-            ({formatDuration(Math.min(DAY_END_HOUR * 60, endMin) - Math.max(DAY_START_HOUR * 60, startMin))})
-          </span>
-        </div>
-      );
+      previewStartMin = Math.max(DAY_START_HOUR * 60, snapToGrid(pixelsToMinutes(minY, hourHeight)));
+      previewEndMin = Math.min(DAY_END_HOUR * 60, snapToGrid(pixelsToMinutes(maxY, hourHeight)));
     }
+  }
+
+  const layoutEntries = useMemo(() => {
+    const all = [...entries];
+    if (previewStartMin < previewEndMin) {
+      all.push({
+        id: CREATION_PREVIEW_ID,
+        title: '',
+        startMinutes: previewStartMin,
+        endMinutes: previewEndMin,
+        color: '',
+      });
+    }
+    return all;
+  }, [entries, previewStartMin, previewEndMin]);
+
+  const layoutMap = useMemo(() => computeOverlapLayout(layoutEntries), [layoutEntries]);
+
+  // Creation preview
+  let creationPreview: React.ReactNode = null;
+  if (previewStartMin < previewEndMin) {
+    const previewLayout = layoutMap.get(CREATION_PREVIEW_ID);
+    const leftPercent = previewLayout ? (previewLayout.columnIndex / previewLayout.totalColumns) * 100 : 0;
+    const widthPercent = previewLayout ? (1 / previewLayout.totalColumns) * 100 : 100;
+    creationPreview = (
+      <div
+        className="creation-preview"
+        style={{
+          top: minutesToPixels(previewStartMin, hourHeight),
+          height: minutesToPixels(previewEndMin, hourHeight) -
+            minutesToPixels(previewStartMin, hourHeight),
+          left: `${leftPercent}%`,
+          width: `calc(${widthPercent}% - 1px)`,
+        }}
+      >
+        <span className="creation-preview-time">
+          {formatTime(previewStartMin)} -{' '}
+          {formatTime(previewEndMin)}{' '}
+          ({formatDuration(previewEndMin - previewStartMin)})
+        </span>
+      </div>
+    );
   }
 
   return (
@@ -420,22 +449,27 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
         {creationPreview}
 
         {/* Time entries */}
-        {entries.map((entry) => (
-          <TimeBlock
-            key={entry.id}
-            entry={entry}
-            hourHeight={hourHeight}
-            isSelected={selectedIds.has(entry.id)}
-            isEditing={editingId === entry.id}
-            onMouseDown={(e) => handleBlockMouseDown(e, entry.id)}
-            onResizeStart={(e, edge) => handleResizeStart(e, entry.id, edge)}
-            onContextMenu={(e) => handleContextMenu(e, entry.id)}
-            onTitleChange={(title) => handleTitleChange(entry.id, title)}
-            onTitleBlur={() => setEditingId(null)}
-            onTitleDoubleClick={() => setEditingId(entry.id)}
-            onToggleDone={() => handleToggleDone(entry.id)}
-          />
-        ))}
+        {entries.map((entry) => {
+          const layout = layoutMap.get(entry.id);
+          return (
+            <TimeBlock
+              key={entry.id}
+              entry={entry}
+              hourHeight={hourHeight}
+              isSelected={selectedIds.has(entry.id)}
+              isEditing={editingId === entry.id}
+              columnIndex={layout?.columnIndex}
+              totalColumns={layout?.totalColumns}
+              onMouseDown={(e) => handleBlockMouseDown(e, entry.id)}
+              onResizeStart={(e, edge) => handleResizeStart(e, entry.id, edge)}
+              onContextMenu={(e) => handleContextMenu(e, entry.id)}
+              onTitleChange={(title) => handleTitleChange(entry.id, title)}
+              onTitleBlur={() => setEditingId(null)}
+              onTitleDoubleClick={() => setEditingId(entry.id)}
+              onToggleDone={() => handleToggleDone(entry.id)}
+            />
+          );
+        })}
       </div>
 
       {/* Color context menu */}

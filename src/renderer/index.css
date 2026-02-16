@@ -113,8 +113,6 @@ body {
 /* Creation preview */
 .creation-preview {
   position: absolute;
-  left: 0;
-  right: 0;
   background: rgba(74, 158, 255, 0.2);
   border: 1px dashed var(--accent);
   border-radius: 6px;
@@ -134,8 +132,6 @@ body {
 /* Time blocks */
 .time-block {
   position: absolute;
-  left: 0;
-  right: 0;
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 6px;
   cursor: grab;

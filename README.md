@@ -13,6 +13,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Color-code** — Right-click any block to pick from 10 preset colors
 - **Done checkbox** — Click the checkbox on any block to mark it complete (turns green with a checkmark)
 - **Inline editing** — Click a block's title to rename it in place
+- **Overlapping blocks** — Overlapping blocks display side-by-side (like Google Calendar) instead of stacking on top of each other
 - **Multi-select** — Ctrl+click to select multiple blocks and move them together
 - **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
 - **Current time line** — A red line shows the current time, updating every minute
