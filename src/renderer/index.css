@@ -186,6 +186,7 @@ body {
   cursor: pointer;
   margin-top: 1px;
   position: relative;
+  z-index: 12;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
