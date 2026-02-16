@@ -340,6 +340,25 @@ body {
   transform: scale(1.1);
 }
 
+.color-menu-action {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s ease;
+  margin-bottom: 4px;
+}
+
+.color-menu-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .color-menu-delete {
   display: block;
   width: 100%;

@@ -17,11 +17,12 @@ interface ColorMenuProps {
   x: number;
   y: number;
   onSelect: (color: string) => void;
+  onDuplicate: () => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-export default function ColorMenu({ x, y, onSelect, onDelete, onClose }: ColorMenuProps) {
+export default function ColorMenu({ x, y, onSelect, onDuplicate, onDelete, onClose }: ColorMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,6 +62,9 @@ export default function ColorMenu({ x, y, onSelect, onDelete, onClose }: ColorMe
           />
         ))}
       </div>
+      <button className="color-menu-action" onClick={onDuplicate}>
+        Duplicate
+      </button>
       <button className="color-menu-delete" onClick={onDelete}>
         Delete
       </button>

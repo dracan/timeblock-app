@@ -254,6 +254,21 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     [entries, onEntriesChange]
   );
 
+  const handleDuplicate = useCallback(
+    (entryId: string) => {
+      const entry = entries.find((e) => e.id === entryId);
+      if (!entry) return;
+      const newEntry: TimeEntry = {
+        ...entry,
+        id: generateId(),
+      };
+      onEntriesChange([...entries, newEntry]);
+      setSelectedIds(new Set([newEntry.id]));
+      setColorMenu(null);
+    },
+    [entries, onEntriesChange]
+  );
+
   const handleDelete = useCallback(
     (entryId: string) => {
       const idsToDelete = selectedIds.size > 0 && selectedIds.has(entryId)
@@ -429,6 +444,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
           x={colorMenu.x}
           y={colorMenu.y}
           onSelect={handleColorSelect}
+          onDuplicate={() => handleDuplicate(colorMenu.entryId)}
           onDelete={() => handleDelete(colorMenu.entryId)}
           onClose={() => setColorMenu(null)}
         />
