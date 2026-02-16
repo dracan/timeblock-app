@@ -333,6 +333,16 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     timelineRef.current.scrollTop = newPixelY - pending.cursorOffsetInContainer;
   }, [hourHeight]);
 
+  // Set initial zoom to fit 9AM–6PM in viewport and scroll to 9AM
+  useLayoutEffect(() => {
+    const el = timelineRef.current;
+    if (!el) return;
+    const visibleHeight = el.clientHeight;
+    const newHourHeight = Math.max(MIN_HOUR_HEIGHT, Math.min(MAX_HOUR_HEIGHT, visibleHeight / 9));
+    setHourHeight(newHourHeight);
+    el.scrollTop = minutesToPixels(9 * 60, newHourHeight);
+  }, []);
+
   // Creation preview
   let creationPreview: React.ReactNode = null;
   if (dragMode.type === 'creating') {
