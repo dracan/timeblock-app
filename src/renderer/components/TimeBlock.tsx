@@ -28,6 +28,7 @@ export default function TimeBlock({
   const inputRef = useRef<HTMLInputElement>(null);
   const top = minutesToPixels(entry.startMinutes);
   const height = minutesToPixels(entry.endMinutes) - top;
+  const isCompact = height <= 20;
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -38,7 +39,7 @@ export default function TimeBlock({
 
   return (
     <div
-      className={`time-block ${isSelected ? 'selected' : ''}`}
+      className={`time-block ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''}`}
       style={{
         top,
         height,
@@ -78,9 +79,11 @@ export default function TimeBlock({
             {entry.title}
           </div>
         )}
-        <div className="time-block-time">
-          {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)}
-        </div>
+        {!isCompact && (
+          <div className="time-block-time">
+            {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)}
+          </div>
+        )}
       </div>
     </div>
   );
