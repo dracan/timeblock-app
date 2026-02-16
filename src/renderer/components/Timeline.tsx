@@ -14,6 +14,7 @@ import {
   pixelsToMinutes,
   snapToGrid,
   formatTime,
+  formatDuration,
   generateId,
 } from '../utils/time';
 
@@ -327,7 +328,8 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
         >
           <span className="creation-preview-time">
             {formatTime(Math.max(DAY_START_HOUR * 60, startMin))} -{' '}
-            {formatTime(Math.min(DAY_END_HOUR * 60, endMin))}
+            {formatTime(Math.min(DAY_END_HOUR * 60, endMin))}{' '}
+            ({formatDuration(Math.min(DAY_END_HOUR * 60, endMin) - Math.max(DAY_START_HOUR * 60, startMin))})
           </span>
         </div>
       );

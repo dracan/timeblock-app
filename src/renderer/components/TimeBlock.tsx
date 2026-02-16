@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { TimeEntry } from '../types';
-import { minutesToPixels, formatTime, DEFAULT_HOUR_HEIGHT } from '../utils/time';
+import { minutesToPixels, formatTime, formatDuration, DEFAULT_HOUR_HEIGHT } from '../utils/time';
 
 interface TimeBlockProps {
   entry: TimeEntry;
@@ -83,7 +83,7 @@ export default function TimeBlock({
         )}
         {!isCompact && (
           <div className="time-block-time">
-            {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)}
+            {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)} ({formatDuration(entry.endMinutes - entry.startMinutes)})
           </div>
         )}
       </div>
