@@ -7,10 +7,26 @@ function getDateStr(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
+function getCurrentMinutes(): number {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
 export default function App() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [today] = useState(() => new Date());
+  const [currentMinutes, setCurrentMinutes] = useState(getCurrentMinutes);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Update current time every 60s
+  useEffect(() => {
+    const id = setInterval(() => setCurrentMinutes(getCurrentMinutes()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const activeEntry = entries.find(
+    (e) => e.startMinutes <= currentMinutes && currentMinutes < e.endMinutes
+  );
 
   // Load entries on mount
   useEffect(() => {
@@ -67,6 +83,15 @@ export default function App() {
         </h1>
       </header>
       <Timeline entries={entries} onEntriesChange={updateEntries} />
+      {activeEntry && (
+        <div className="now-panel">
+          <div
+            className="now-panel-accent"
+            style={{ background: activeEntry.color }}
+          />
+          <span className="now-panel-title">{activeEntry.title || 'Untitled'}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -357,6 +357,33 @@ body {
   background: rgba(239, 68, 68, 0.3);
 }
 
+/* Now panel */
+.now-panel {
+  flex-shrink: 0;
+  height: 36px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.now-panel-accent {
+  width: 4px;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.now-panel-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Scrollbar styling */
 .timeline-container::-webkit-scrollbar {
   width: 8px;
