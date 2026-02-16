@@ -1,9 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { TimeEntry } from '../types';
-import { minutesToPixels, formatTime } from '../utils/time';
+import { minutesToPixels, formatTime, DEFAULT_HOUR_HEIGHT } from '../utils/time';
 
 interface TimeBlockProps {
   entry: TimeEntry;
+  hourHeight: number;
   isSelected: boolean;
   isEditing: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
@@ -16,6 +17,7 @@ interface TimeBlockProps {
 
 export default function TimeBlock({
   entry,
+  hourHeight,
   isSelected,
   isEditing,
   onMouseDown,
@@ -26,9 +28,9 @@ export default function TimeBlock({
   onTitleDoubleClick,
 }: TimeBlockProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const top = minutesToPixels(entry.startMinutes);
-  const height = minutesToPixels(entry.endMinutes) - top;
-  const isCompact = height <= 20;
+  const top = minutesToPixels(entry.startMinutes, hourHeight);
+  const height = minutesToPixels(entry.endMinutes, hourHeight) - top;
+  const isCompact = height <= 20 * (hourHeight / DEFAULT_HOUR_HEIGHT);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {

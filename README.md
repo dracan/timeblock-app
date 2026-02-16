@@ -13,6 +13,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Color-code** — Right-click any block to pick from 10 preset colors
 - **Inline editing** — Click a block's title to rename it in place
 - **Multi-select** — Ctrl+click to select multiple blocks and move them together
+- **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
 - **15-minute snap grid** — All times snap to 15-minute increments
 - **Auto-save** — Changes save automatically after 300ms of inactivity
 - **Markdown storage** — Data is stored as human-readable `.md` files you can open in any text editor

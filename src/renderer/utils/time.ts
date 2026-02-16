@@ -1,17 +1,29 @@
 export const DAY_START_HOUR = 6;
 export const DAY_END_HOUR = 23;
-export const HOUR_HEIGHT = 60; // pixels per hour
 export const SNAP_MINUTES = 15;
 export const TOTAL_HOURS = DAY_END_HOUR - DAY_START_HOUR;
+
+// Zoom constants
+export const DEFAULT_HOUR_HEIGHT = 60;
+export const MIN_HOUR_HEIGHT = 20;
+export const MAX_HOUR_HEIGHT = 200;
+export const ZOOM_STEP = 1.15;
+
+// Backward-compat aliases
+export const HOUR_HEIGHT = DEFAULT_HOUR_HEIGHT;
 export const TOTAL_HEIGHT = TOTAL_HOURS * HOUR_HEIGHT;
 
-export function minutesToPixels(minutes: number): number {
-  const offsetMinutes = minutes - DAY_START_HOUR * 60;
-  return (offsetMinutes / 60) * HOUR_HEIGHT;
+export function getTotalHeight(hourHeight: number): number {
+  return TOTAL_HOURS * hourHeight;
 }
 
-export function pixelsToMinutes(pixels: number): number {
-  return (pixels / HOUR_HEIGHT) * 60 + DAY_START_HOUR * 60;
+export function minutesToPixels(minutes: number, hourHeight: number = DEFAULT_HOUR_HEIGHT): number {
+  const offsetMinutes = minutes - DAY_START_HOUR * 60;
+  return (offsetMinutes / 60) * hourHeight;
+}
+
+export function pixelsToMinutes(pixels: number, hourHeight: number = DEFAULT_HOUR_HEIGHT): number {
+  return (pixels / hourHeight) * 60 + DAY_START_HOUR * 60;
 }
 
 export function snapToGrid(minutes: number): number {

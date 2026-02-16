@@ -1,12 +1,15 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { TimeEntry } from '../types';
 import TimeBlock from './TimeBlock';
 import ColorMenu from './ColorMenu';
 import {
   DAY_START_HOUR,
   DAY_END_HOUR,
-  HOUR_HEIGHT,
-  TOTAL_HEIGHT,
+  DEFAULT_HOUR_HEIGHT,
+  MIN_HOUR_HEIGHT,
+  MAX_HOUR_HEIGHT,
+  ZOOM_STEP,
+  getTotalHeight,
   minutesToPixels,
   pixelsToMinutes,
   snapToGrid,
@@ -32,7 +35,9 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [colorMenu, setColorMenu] = useState<{ x: number; y: number; entryId: string } | null>(null);
+  const [hourHeight, setHourHeight] = useState(DEFAULT_HOUR_HEIGHT);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const pendingScrollRef = useRef<{ timeAtCursor: number; cursorOffsetInContainer: number } | null>(null);
 
   const hours = [];
   for (let h = DAY_START_HOUR; h <= DAY_END_HOUR; h++) {
@@ -77,7 +82,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
         );
       } else if (dragMode.type === 'moving') {
         const deltaY = y - dragMode.offsetY;
-        const deltaMinutes = snapToGrid(pixelsToMinutes(deltaY) - DAY_START_HOUR * 60);
+        const deltaMinutes = snapToGrid(pixelsToMinutes(deltaY, hourHeight) - DAY_START_HOUR * 60);
 
         const updated = entries.map((entry) => {
           const origStart = dragMode.startMinutesMap.get(entry.id);
@@ -92,7 +97,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
         });
         onEntriesChange(updated);
       } else if (dragMode.type === 'resizing') {
-        const minutes = snapToGrid(pixelsToMinutes(y));
+        const minutes = snapToGrid(pixelsToMinutes(y, hourHeight));
         const updated = entries.map((entry) => {
           if (entry.id !== dragMode.entryId) return entry;
           if (dragMode.edge === 'top') {
@@ -116,8 +121,8 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
 
         // Only create if dragged at least a bit
         if (maxY - minY > 5) {
-          const startMin = snapToGrid(pixelsToMinutes(minY));
-          const endMin = snapToGrid(pixelsToMinutes(maxY));
+          const startMin = snapToGrid(pixelsToMinutes(minY, hourHeight));
+          const endMin = snapToGrid(pixelsToMinutes(maxY, hourHeight));
           if (endMin > startMin) {
             const newEntry: TimeEntry = {
               id: generateId(),
@@ -140,7 +145,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragMode, entries, onEntriesChange, getTimelineY]);
+  }, [dragMode, entries, onEntriesChange, getTimelineY, hourHeight]);
 
   // --- Entry interactions ---
   const handleBlockMouseDown = useCallback(
@@ -265,21 +270,59 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIds, editingId, entries, onEntriesChange]);
 
+  // Ctrl+mousewheel zoom
+  useEffect(() => {
+    const el = timelineRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+
+      const rect = el.getBoundingClientRect();
+      const cursorYInContainer = e.clientY - rect.top;
+      const cursorYInContent = cursorYInContainer + el.scrollTop;
+      const timeAtCursor = pixelsToMinutes(cursorYInContent, hourHeight);
+
+      setHourHeight((prev) => {
+        const next = e.deltaY < 0
+          ? Math.min(MAX_HOUR_HEIGHT, prev * ZOOM_STEP)
+          : Math.max(MIN_HOUR_HEIGHT, prev / ZOOM_STEP);
+        return next;
+      });
+
+      pendingScrollRef.current = { timeAtCursor, cursorOffsetInContainer: cursorYInContainer };
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [hourHeight]);
+
+  // Scroll anchoring after zoom
+  useLayoutEffect(() => {
+    const pending = pendingScrollRef.current;
+    if (!pending || !timelineRef.current) return;
+    pendingScrollRef.current = null;
+
+    const newPixelY = minutesToPixels(pending.timeAtCursor, hourHeight);
+    timelineRef.current.scrollTop = newPixelY - pending.cursorOffsetInContainer;
+  }, [hourHeight]);
+
   // Creation preview
   let creationPreview: React.ReactNode = null;
   if (dragMode.type === 'creating') {
     const minY = Math.min(dragMode.startY, dragMode.currentY);
     const maxY = Math.max(dragMode.startY, dragMode.currentY);
     if (maxY - minY > 5) {
-      const startMin = snapToGrid(pixelsToMinutes(minY));
-      const endMin = snapToGrid(pixelsToMinutes(maxY));
+      const startMin = snapToGrid(pixelsToMinutes(minY, hourHeight));
+      const endMin = snapToGrid(pixelsToMinutes(maxY, hourHeight));
       creationPreview = (
         <div
           className="creation-preview"
           style={{
-            top: minutesToPixels(Math.max(DAY_START_HOUR * 60, startMin)),
-            height: minutesToPixels(Math.min(DAY_END_HOUR * 60, endMin)) -
-              minutesToPixels(Math.max(DAY_START_HOUR * 60, startMin)),
+            top: minutesToPixels(Math.max(DAY_START_HOUR * 60, startMin), hourHeight),
+            height: minutesToPixels(Math.min(DAY_END_HOUR * 60, endMin), hourHeight) -
+              minutesToPixels(Math.max(DAY_START_HOUR * 60, startMin), hourHeight),
           }}
         >
           <span className="creation-preview-time">
@@ -295,7 +338,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
     <div className="timeline-container" ref={timelineRef}>
       <div
         className="timeline"
-        style={{ height: TOTAL_HEIGHT }}
+        style={{ height: getTotalHeight(hourHeight) }}
         onMouseDown={handleTimelineMouseDown}
       >
         {/* Hour grid */}
@@ -304,13 +347,13 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
             key={hour}
             className="hour-row"
             style={{
-              top: minutesToPixels(hour * 60),
-              height: HOUR_HEIGHT,
+              top: minutesToPixels(hour * 60, hourHeight),
+              height: hourHeight,
             }}
           >
             <span className="hour-label">{formatTime(hour * 60)}</span>
             <div className="hour-line" />
-            <div className="half-hour-line" style={{ top: HOUR_HEIGHT / 2 }} />
+            <div className="half-hour-line" style={{ top: hourHeight / 2 }} />
           </div>
         ))}
 
@@ -322,6 +365,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
           <TimeBlock
             key={entry.id}
             entry={entry}
+            hourHeight={hourHeight}
             isSelected={selectedIds.has(entry.id)}
             isEditing={editingId === entry.id}
             onMouseDown={(e) => handleBlockMouseDown(e, entry.id)}
