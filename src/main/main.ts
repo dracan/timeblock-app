@@ -35,6 +35,14 @@ function createWindow(): void {
     mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
   }
 
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.control && !input.shift && !input.alt && input.key === '=') {
+      const current = mainWindow!.webContents.getZoomLevel();
+      mainWindow!.webContents.setZoomLevel(current + 0.5);
+      event.preventDefault();
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
