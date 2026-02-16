@@ -43,7 +43,7 @@ body {
 }
 
 .app-header h1 {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -77,7 +77,7 @@ body {
   top: -9px;
   width: 62px;
   text-align: right;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -126,7 +126,7 @@ body {
 }
 
 .creation-preview-time {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--accent);
   font-weight: 500;
 }
@@ -233,7 +233,7 @@ body {
 }
 
 .time-block-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
   white-space: nowrap;
@@ -243,7 +243,7 @@ body {
 }
 
 .time-block-title-input {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
   background: rgba(0, 0, 0, 0.3);
@@ -256,7 +256,7 @@ body {
 }
 
 .time-block-time {
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.75);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
@@ -269,12 +269,12 @@ body {
 }
 
 .time-block.compact .time-block-title {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 15px;
 }
 
 .time-block.compact .time-block-title-input {
-  font-size: 11px;
+  font-size: 13px;
   padding: 0 4px;
 }
 
@@ -311,7 +311,7 @@ body {
 }
 
 .color-menu-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -348,7 +348,7 @@ body {
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.1s ease;
@@ -377,7 +377,7 @@ body {
 }
 
 .now-panel-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
