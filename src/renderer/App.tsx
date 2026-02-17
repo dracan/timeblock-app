@@ -18,9 +18,9 @@ export default function App() {
   const [currentMinutes, setCurrentMinutes] = useState(getCurrentMinutes);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Update current time every 60s
+  // Update current time every 1s so back-to-back entries switch immediately at boundaries
   useEffect(() => {
-    const id = setInterval(() => setCurrentMinutes(getCurrentMinutes()), 60_000);
+    const id = setInterval(() => setCurrentMinutes(getCurrentMinutes()), 1_000);
     return () => clearInterval(id);
   }, []);
 
