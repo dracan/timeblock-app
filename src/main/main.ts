@@ -135,6 +135,28 @@ ipcMain.on('focus-main-window', () => {
   }
 });
 
+let widgetDragStart: { mouseX: number; mouseY: number; winX: number; winY: number } | null = null;
+
+ipcMain.on('widget-drag-start', (_event, screenX: number, screenY: number) => {
+  if (widgetWindow) {
+    const [winX, winY] = widgetWindow.getPosition();
+    widgetDragStart = { mouseX: screenX, mouseY: screenY, winX, winY };
+  }
+});
+
+ipcMain.on('widget-drag-move', (_event, screenX: number, screenY: number) => {
+  if (widgetWindow && widgetDragStart) {
+    widgetWindow.setPosition(
+      widgetDragStart.winX + screenX - widgetDragStart.mouseX,
+      widgetDragStart.winY + screenY - widgetDragStart.mouseY
+    );
+  }
+});
+
+ipcMain.on('widget-drag-end', () => {
+  widgetDragStart = null;
+});
+
 ipcMain.on('active-entry-changed', (_event, entry) => {
   lastActiveEntry = entry;
   if (widgetWindow) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { TimeEntry } from '../types';
 import { formatTime } from '../utils/time';
 
@@ -11,6 +11,8 @@ function formatCountdown(remainingSeconds: number): string {
   if (m > 0) return `${m}m ${s}s left`;
   return `${s}s left`;
 }
+
+const DRAG_THRESHOLD = 4;
 
 export default function Widget() {
   const [entry, setEntry] = useState<TimeEntry | null>(null);
@@ -49,8 +51,38 @@ export default function Widget() {
     return () => clearInterval(id);
   }, [entry]);
 
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    const startX = e.screenX;
+    const startY = e.screenY;
+    let dragging = false;
+
+    window.electronAPI?.widgetDragStart?.(startX, startY);
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!dragging && (Math.abs(ev.screenX - startX) > DRAG_THRESHOLD || Math.abs(ev.screenY - startY) > DRAG_THRESHOLD)) {
+        dragging = true;
+      }
+      if (dragging) {
+        window.electronAPI?.widgetDragMove?.(ev.screenX, ev.screenY);
+      }
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      window.electronAPI?.widgetDragEnd?.();
+      if (!dragging) {
+        window.electronAPI?.focusMainWindow?.();
+      }
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
+
   return (
-    <div className={`widget${flashing ? ' widget-flash' : ''}`} onClick={() => window.electronAPI?.focusMainWindow?.()}>
+    <div className={`widget${flashing ? ' widget-flash' : ''}`} onMouseDown={handleMouseDown}>
       {entry ? (
         <>
           <div className="widget-accent" style={{ background: entry.color }} />

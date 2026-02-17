@@ -15,6 +15,9 @@ export interface ElectronAPI {
   sendActiveEntry: (entry: TimeEntry | null) => void;
   onActiveEntryUpdate: (cb: (entry: TimeEntry | null) => void) => () => void;
   focusMainWindow: () => void;
+  widgetDragStart: (screenX: number, screenY: number) => void;
+  widgetDragMove: (screenX: number, screenY: number) => void;
+  widgetDragEnd: () => void;
   onWidgetToggled: (cb: (open: boolean) => void) => () => void;
 }
 

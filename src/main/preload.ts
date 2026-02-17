@@ -21,6 +21,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   focusMainWindow: (): void => {
     ipcRenderer.send('focus-main-window');
   },
+  widgetDragStart: (screenX: number, screenY: number): void => {
+    ipcRenderer.send('widget-drag-start', screenX, screenY);
+  },
+  widgetDragMove: (screenX: number, screenY: number): void => {
+    ipcRenderer.send('widget-drag-move', screenX, screenY);
+  },
+  widgetDragEnd: (): void => {
+    ipcRenderer.send('widget-drag-end');
+  },
   onWidgetToggled: (cb: (open: boolean) => void): (() => void) => {
     const handler = (_event: Electron.IpcRendererEvent, open: boolean) => cb(open);
     ipcRenderer.on('widget-toggled', handler);
