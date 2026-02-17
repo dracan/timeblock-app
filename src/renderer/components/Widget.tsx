@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TimeEntry } from '../types';
 import { formatTime } from '../utils/time';
 
@@ -15,6 +15,8 @@ function formatCountdown(remainingSeconds: number): string {
 export default function Widget() {
   const [entry, setEntry] = useState<TimeEntry | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const [flashing, setFlashing] = useState(false);
+  const prevEntryId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!window.electronAPI?.onActiveEntryUpdate) return;
@@ -23,6 +25,17 @@ export default function Widget() {
     });
     return cleanup;
   }, []);
+
+  useEffect(() => {
+    const newId = entry?.id ?? null;
+    if (prevEntryId.current && newId && prevEntryId.current !== newId) {
+      setFlashing(true);
+      const timer = setTimeout(() => setFlashing(false), 1200);
+      prevEntryId.current = newId;
+      return () => clearTimeout(timer);
+    }
+    prevEntryId.current = newId;
+  }, [entry]);
 
   useEffect(() => {
     if (!entry) return;
@@ -37,7 +50,7 @@ export default function Widget() {
   }, [entry]);
 
   return (
-    <div className="widget" onClick={() => window.electronAPI?.focusMainWindow?.()}>
+    <div className={`widget${flashing ? ' widget-flash' : ''}`} onClick={() => window.electronAPI?.focusMainWindow?.()}>
       {entry ? (
         <>
           <div className="widget-accent" style={{ background: entry.color }} />

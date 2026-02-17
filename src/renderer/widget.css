@@ -72,3 +72,13 @@ body {
   color: #6a6a7a;
   padding: 8px 12px;
 }
+
+@keyframes widget-pulse {
+  0% { background: #1a1a2e; border-color: #2a2a4a; }
+  30% { background: #2a2a5e; border-color: #5a5aaa; }
+  100% { background: #1a1a2e; border-color: #2a2a4a; }
+}
+
+.widget-flash {
+  animation: widget-pulse 400ms ease-in-out 3;
+}
