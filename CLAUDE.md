@@ -56,8 +56,12 @@ Data serializes to markdown via `src/renderer/utils/markdown.ts`. Format: H1 for
 
 ## README Maintenance
 
-After making any change, check whether `README.md` needs to be updated. Specifically, update the README when:
-- Features are added, removed, or changed
+**MANDATORY:** After every code change, you MUST review `README.md` and update it before committing. Do not treat this as optional. Gaps in the README are bugs.
+
+Update the README when any of the following apply:
+- A user-facing feature is added, removed, or changed (new UI elements, keyboard shortcuts, context menu options, panels, widgets, animations, etc.)
 - Build/run commands or prerequisites change
 - The data storage format changes
 - The tech stack or major dependencies change
+
+When adding a feature, read through the existing Features list in the README and confirm the new capability is documented there. If you are unsure whether the README needs updating, update it — it is better to over-document than to leave gaps.
