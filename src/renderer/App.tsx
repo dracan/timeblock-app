@@ -40,6 +40,13 @@ export default function App() {
       )
     : undefined;
 
+  // Compute next upcoming entry (first entry starting at or after now that isn't the active one)
+  const nextEntry = isToday
+    ? entries
+        .filter((e) => e.startMinutes >= currentMinutes && e !== activeEntry)
+        .sort((a, b) => a.startMinutes - b.startMinutes)[0] ?? null
+    : null;
+
   const [widgetOpen, setWidgetOpen] = useState(false);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
 
@@ -50,12 +57,12 @@ export default function App() {
     });
   }, []);
 
-  // Send active entry to widget whenever it changes
+  // Send active entry and next entry to widget whenever they change
   useEffect(() => {
     if (window.electronAPI?.sendActiveEntry) {
-      window.electronAPI.sendActiveEntry(activeEntry ?? null);
+      window.electronAPI.sendActiveEntry({ active: activeEntry ?? null, next: nextEntry });
     }
-  }, [activeEntry]);
+  }, [activeEntry, nextEntry]);
 
   // Listen for widget toggled state from main process
   useEffect(() => {

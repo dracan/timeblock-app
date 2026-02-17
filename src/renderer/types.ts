@@ -7,6 +7,11 @@ export interface TimeEntry {
   done?: boolean;
 }
 
+export interface WidgetData {
+  active: TimeEntry | null;
+  next: TimeEntry | null;
+}
+
 export interface UpdateInfo {
   currentVersion: string;
   latestVersion: string;
@@ -18,8 +23,8 @@ export interface ElectronAPI {
   loadDay: (dateStr: string) => Promise<string | null>;
   getDataDir: () => Promise<string>;
   toggleWidget: () => void;
-  sendActiveEntry: (entry: TimeEntry | null) => void;
-  onActiveEntryUpdate: (cb: (entry: TimeEntry | null) => void) => () => void;
+  sendActiveEntry: (data: WidgetData) => void;
+  onActiveEntryUpdate: (cb: (data: WidgetData) => void) => () => void;
   focusMainWindow: () => void;
   widgetDragStart: (screenX: number, screenY: number) => void;
   widgetDragMove: (screenX: number, screenY: number) => void;

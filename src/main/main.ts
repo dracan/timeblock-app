@@ -57,7 +57,7 @@ function createWindow(): void {
 function createWidgetWindow(): void {
   const { workAreaSize } = screen.getPrimaryDisplay();
   const width = 300;
-  const height = 80;
+  const height = 96;
 
   widgetWindow = new BrowserWindow({
     width,

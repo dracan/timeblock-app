@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { TimeEntry } from '../types';
+import { TimeEntry, WidgetData } from '../types';
 import { formatTime } from '../utils/time';
 
 function formatCountdown(remainingSeconds: number): string {
@@ -16,14 +16,16 @@ const DRAG_THRESHOLD = 4;
 
 export default function Widget() {
   const [entry, setEntry] = useState<TimeEntry | null>(null);
+  const [nextEntry, setNextEntry] = useState<TimeEntry | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const [flashing, setFlashing] = useState(false);
   const prevEntryId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!window.electronAPI?.onActiveEntryUpdate) return;
-    const cleanup = window.electronAPI.onActiveEntryUpdate((e: TimeEntry | null) => {
-      setEntry(e);
+    const cleanup = window.electronAPI.onActiveEntryUpdate((data: WidgetData) => {
+      setEntry(data.active);
+      setNextEntry(data.next);
     });
     return cleanup;
   }, []);
@@ -92,10 +94,18 @@ export default function Widget() {
               <span>{formatTime(entry.startMinutes)} – {formatTime(entry.endMinutes)}</span>
               <span className="widget-countdown">{formatCountdown(remainingSeconds)}</span>
             </div>
+            {nextEntry && (
+              <div className="widget-next">Next: {nextEntry.title || 'Untitled'} at {formatTime(nextEntry.startMinutes)}</div>
+            )}
           </div>
         </>
       ) : (
-        <div className="widget-empty">No active block</div>
+        <div className="widget-empty">
+          No active block
+          {nextEntry && (
+            <div className="widget-next">Next: {nextEntry.title || 'Untitled'} at {formatTime(nextEntry.startMinutes)}</div>
+          )}
+        </div>
       )}
     </div>
   );
