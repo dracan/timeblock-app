@@ -22,6 +22,7 @@ import { computeOverlapLayout } from '../utils/overlap';
 interface TimelineProps {
   entries: TimeEntry[];
   onEntriesChange: (entries: TimeEntry[]) => void;
+  isToday: boolean;
 }
 
 type DragMode =
@@ -32,7 +33,7 @@ type DragMode =
 
 const DEFAULT_COLOR = '#4a9eff';
 
-export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
+export default function Timeline({ entries, onEntriesChange, isToday }: TimelineProps) {
   const [dragMode, setDragMode] = useState<DragMode>({ type: 'none' });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -438,7 +439,7 @@ export default function Timeline({ entries, onEntriesChange }: TimelineProps) {
         ))}
 
         {/* Current time indicator */}
-        {currentMinutes >= DAY_START_HOUR * 60 && currentMinutes <= DAY_END_HOUR * 60 && (
+        {isToday && currentMinutes >= DAY_START_HOUR * 60 && currentMinutes <= DAY_END_HOUR * 60 && (
           <div
             className="current-time-line"
             style={{ top: minutesToPixels(currentMinutes, hourHeight) }}

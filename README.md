@@ -19,6 +19,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
 - **"Now Doing" panel** — The bottom of the main window highlights your currently active time block
 - **Floating widget** — Toggle an always-on-top mini window that shows your current time block with a live countdown timer, visible even when the app is in the background. Pulses when the active block changes so you don't miss transitions. Click it to bring the main window to focus
+- **Day navigation** — Arrow buttons in the header let you browse previous days; the right arrow is disabled on today to prevent navigating into the future. The current time line and "Now Doing" panel only appear when viewing today
 - **Current time line** — A red line shows the current time, updating every minute
 - **15-minute snap grid** — All times snap to 15-minute increments
 - **Auto-save** — Changes save automatically after 300ms of inactivity

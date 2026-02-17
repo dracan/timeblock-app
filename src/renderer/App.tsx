@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { TimeEntry } from './types';
 import { entriesToMarkdown, markdownToEntries } from './utils/markdown';
 import Timeline from './components/Timeline';
@@ -12,11 +12,20 @@ function getCurrentMinutes(): number {
   return now.getHours() * 60 + now.getMinutes();
 }
 
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
 export default function App() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [today] = useState(() => new Date());
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [currentMinutes, setCurrentMinutes] = useState(getCurrentMinutes);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const realToday = useMemo(() => new Date(), []);
+  const isToday = isSameDay(selectedDate, realToday);
 
   // Update current time every 1s so back-to-back entries switch immediately at boundaries
   useEffect(() => {
@@ -24,9 +33,12 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
-  const activeEntry = entries.find(
-    (e) => e.startMinutes <= currentMinutes && currentMinutes < e.endMinutes
-  );
+  // Only compute active entry when viewing today
+  const activeEntry = isToday
+    ? entries.find(
+        (e) => e.startMinutes <= currentMinutes && currentMinutes < e.endMinutes
+      )
+    : undefined;
 
   const [widgetOpen, setWidgetOpen] = useState(false);
 
@@ -46,13 +58,15 @@ export default function App() {
     return cleanup;
   }, []);
 
-  // Load entries on mount
+  // Load entries when selectedDate changes
   useEffect(() => {
-    const dateStr = getDateStr(today);
+    const dateStr = getDateStr(selectedDate);
     if (window.electronAPI) {
       window.electronAPI.loadDay(dateStr).then((md) => {
         if (md) {
           setEntries(markdownToEntries(md));
+        } else {
+          setEntries([]);
         }
       });
     } else {
@@ -60,17 +74,19 @@ export default function App() {
       const stored = localStorage.getItem(`day-${dateStr}`);
       if (stored) {
         setEntries(markdownToEntries(stored));
+      } else {
+        setEntries([]);
       }
     }
-  }, [today]);
+  }, [selectedDate]);
 
   // Auto-save with debounce
   const saveEntries = useCallback(
     (updated: TimeEntry[]) => {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
       saveTimeout.current = setTimeout(() => {
-        const dateStr = getDateStr(today);
-        const md = entriesToMarkdown(updated, today);
+        const dateStr = getDateStr(selectedDate);
+        const md = entriesToMarkdown(updated, selectedDate);
         if (window.electronAPI) {
           window.electronAPI.saveDay(dateStr, md);
         } else {
@@ -78,7 +94,7 @@ export default function App() {
         }
       }, 300);
     },
-    [today]
+    [selectedDate]
   );
 
   const updateEntries = useCallback(
@@ -89,16 +105,54 @@ export default function App() {
     [saveEntries]
   );
 
+  const goToPrevDay = useCallback(() => {
+    setSelectedDate((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() - 1);
+      return d;
+    });
+  }, []);
+
+  const goToNextDay = useCallback(() => {
+    if (isToday) return;
+    setSelectedDate((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + 1);
+      return d;
+    });
+  }, [isToday]);
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>
-          {today.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-          })}
-        </h1>
+        <div className="date-nav">
+          <button
+            className="date-nav-btn"
+            onClick={goToPrevDay}
+            title="Previous day"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 3L5 7L9 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <h1 className={!isToday ? 'past-day' : ''}>
+            {selectedDate.toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </h1>
+          <button
+            className="date-nav-btn"
+            onClick={goToNextDay}
+            disabled={isToday}
+            title={isToday ? 'Already on today' : 'Next day'}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
         {window.electronAPI && (
           <button
             className={`widget-toggle-btn${widgetOpen ? ' active' : ''}`}
@@ -112,7 +166,7 @@ export default function App() {
           </button>
         )}
       </header>
-      <Timeline entries={entries} onEntriesChange={updateEntries} />
+      <Timeline entries={entries} onEntriesChange={updateEntries} isToday={isToday} />
       {activeEntry && (
         <div className="now-panel">
           <div

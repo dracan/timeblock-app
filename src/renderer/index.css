@@ -71,10 +71,45 @@ body {
   color: var(--accent);
 }
 
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-nav-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: inherit;
+}
+
+.date-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.date-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .app-header h1 {
   font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.app-header h1.past-day {
+  color: var(--text-secondary);
 }
 
 /* Timeline container */
