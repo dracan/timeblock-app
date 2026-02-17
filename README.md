@@ -8,15 +8,17 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 
 ## Features
 
-- **Drag to create** — Click and drag on the timeline to create a new block
+- **Drag to create** — Click and drag on the timeline to create a new block (auto-enters edit mode so you can type a title immediately)
 - **Move and resize** — Drag blocks to reposition them, or pull the edges to adjust duration
 - **Color-code** — Right-click any block to pick from 10 preset colors
+- **Duplicate and delete** — Right-click context menu includes Duplicate to clone a block and Delete to remove it (or press the Delete key)
 - **Done checkbox** — Click the checkbox on any block to mark it complete (turns green with a checkmark)
-- **Inline editing** — Click a block's title to rename it in place
+- **Inline editing** — Click a block's title to rename it in place (Enter to confirm, Escape to cancel)
 - **Overlapping blocks** — Overlapping blocks display side-by-side (like Google Calendar) instead of stacking on top of each other
-- **Multi-select** — Ctrl+click to select multiple blocks and move them together
+- **Multi-select** — Ctrl+click to select multiple blocks and move, delete, or recolor them together
 - **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
-- **Floating widget** — Toggle an always-on-top mini window that shows your current time block, visible even when the app is in the background
+- **"Now Doing" panel** — The bottom of the main window highlights your currently active time block
+- **Floating widget** — Toggle an always-on-top mini window that shows your current time block with a live countdown timer, visible even when the app is in the background. Pulses when the active block changes so you don't miss transitions. Click it to bring the main window to focus
 - **Current time line** — A red line shows the current time, updating every minute
 - **15-minute snap grid** — All times snap to 15-minute increments
 - **Auto-save** — Changes save automatically after 300ms of inactivity
