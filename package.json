@@ -7,7 +7,7 @@
     "dev": "tsc -p tsconfig.main.json && concurrently \"vite --host\" \"wait-on http://localhost:5173 && electron . --dev\"",
     "build": "tsc -p tsconfig.main.json && vite build",
     "start": "electron .",
-    "pack": "npm run build && electron-builder --win portable"
+    "pack": "npm run build && electron-builder --win nsis"
   },
   "author": "",
   "license": "MIT",
@@ -35,7 +35,12 @@
       "package.json"
     ],
     "win": {
-      "target": "portable"
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false
     }
   }
 }

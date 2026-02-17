@@ -56,13 +56,13 @@ npm run build
 npm start
 ```
 
-### Package as Portable Windows Exe
+### Package as Windows Installer
 
 ```bash
 npm run pack
 ```
 
-Output goes to the `release/` directory.
+Produces an NSIS installer in the `release/` directory. The installer is single-click (no wizard) and installs per-user without requiring admin privileges.
 
 ## Data Storage
 
