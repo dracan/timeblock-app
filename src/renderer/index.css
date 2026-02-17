@@ -164,7 +164,6 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 6px;
   cursor: grab;
-  overflow: hidden;
   z-index: 10;
   transition: box-shadow 0.15s ease;
   min-height: 15px;
@@ -186,6 +185,7 @@ body {
 .time-block-content {
   padding: 4px 8px;
   height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -199,6 +199,27 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+/* Tooltip */
+.time-block-tooltip {
+  position: absolute;
+  transform: translateX(-50%) translateY(-100%);
+  margin-top: -10px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Done checkbox */

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TimeEntry } from '../types';
 import { minutesToPixels, formatTime, formatDuration, DEFAULT_HOUR_HEIGHT } from '../utils/time';
 
@@ -34,6 +34,9 @@ export default function TimeBlock({
   onToggleDone,
 }: TimeBlockProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
   const top = minutesToPixels(entry.startMinutes, hourHeight);
   const height = minutesToPixels(entry.endMinutes, hourHeight) - top;
   const isCompact = height <= 20 * (hourHeight / DEFAULT_HOUR_HEIGHT);
@@ -59,7 +62,27 @@ export default function TimeBlock({
       }}
       onMouseDown={onMouseDown}
       onContextMenu={onContextMenu}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        mousePosRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }}
+      onMouseEnter={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        mousePosRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        if (!isEditing && entry.title) {
+          hoverTimer.current = setTimeout(() => setTooltipPos({ ...mousePosRef.current }), 1000);
+        }
+      }}
+      onMouseLeave={() => {
+        if (hoverTimer.current) clearTimeout(hoverTimer.current);
+        setTooltipPos(null);
+      }}
     >
+      {/* Tooltip */}
+      {tooltipPos && !isEditing && entry.title && (
+        <div className="time-block-tooltip" style={{ left: tooltipPos.x, top: tooltipPos.y }}>{entry.title}</div>
+      )}
+
       {/* Resize handles */}
       <div
         className="resize-handle resize-handle-top"
