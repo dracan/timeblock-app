@@ -137,6 +137,10 @@ body {
   color: var(--text-secondary);
 }
 
+.app-header h1.future-day {
+  color: var(--text-secondary);
+}
+
 /* Timeline container */
 .timeline-container {
   flex: 1;

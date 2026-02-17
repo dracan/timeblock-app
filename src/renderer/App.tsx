@@ -129,13 +129,12 @@ export default function App() {
   }, []);
 
   const goToNextDay = useCallback(() => {
-    if (isToday) return;
     setSelectedDate((prev) => {
       const d = new Date(prev);
       d.setDate(d.getDate() + 1);
       return d;
     });
-  }, [isToday]);
+  }, []);
 
   return (
     <div className="app">
@@ -150,7 +149,7 @@ export default function App() {
               <path d="M9 3L5 7L9 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className={!isToday ? 'past-day' : ''}>
+          <h1 className={!isToday ? (selectedDate < realToday ? 'past-day' : 'future-day') : ''}>
             {selectedDate.toLocaleDateString('en-US', {
               weekday: 'short',
               month: 'short',
@@ -160,8 +159,7 @@ export default function App() {
           <button
             className="date-nav-btn"
             onClick={goToNextDay}
-            disabled={isToday}
-            title={isToday ? 'Already on today' : 'Next day'}
+            title="Next day"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
