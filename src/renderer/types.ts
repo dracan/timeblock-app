@@ -11,6 +11,10 @@ export interface ElectronAPI {
   saveDay: (dateStr: string, content: string) => Promise<boolean>;
   loadDay: (dateStr: string) => Promise<string | null>;
   getDataDir: () => Promise<string>;
+  toggleWidget: () => void;
+  sendActiveEntry: (entry: TimeEntry | null) => void;
+  onActiveEntryUpdate: (cb: (entry: TimeEntry | null) => void) => () => void;
+  onWidgetToggled: (cb: (open: boolean) => void) => () => void;
 }
 
 declare global {

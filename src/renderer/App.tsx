@@ -28,6 +28,24 @@ export default function App() {
     (e) => e.startMinutes <= currentMinutes && currentMinutes < e.endMinutes
   );
 
+  const [widgetOpen, setWidgetOpen] = useState(false);
+
+  // Send active entry to widget whenever it changes
+  useEffect(() => {
+    if (window.electronAPI?.sendActiveEntry) {
+      window.electronAPI.sendActiveEntry(activeEntry ?? null);
+    }
+  }, [activeEntry]);
+
+  // Listen for widget toggled state from main process
+  useEffect(() => {
+    if (!window.electronAPI?.onWidgetToggled) return;
+    const cleanup = window.electronAPI.onWidgetToggled((open: boolean) => {
+      setWidgetOpen(open);
+    });
+    return cleanup;
+  }, []);
+
   // Load entries on mount
   useEffect(() => {
     const dateStr = getDateStr(today);
@@ -81,6 +99,18 @@ export default function App() {
             day: 'numeric',
           })}
         </h1>
+        {window.electronAPI && (
+          <button
+            className={`widget-toggle-btn${widgetOpen ? ' active' : ''}`}
+            onClick={() => window.electronAPI.toggleWidget()}
+            title={widgetOpen ? 'Hide floating widget' : 'Show floating widget'}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <rect x="4" y="4" width="8" height="5" rx="1" fill="currentColor" opacity="0.6" />
+            </svg>
+          </button>
+        )}
       </header>
       <Timeline entries={entries} onEntriesChange={updateEntries} />
       {activeEntry && (

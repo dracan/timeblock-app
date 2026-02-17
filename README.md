@@ -16,6 +16,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Overlapping blocks** — Overlapping blocks display side-by-side (like Google Calendar) instead of stacking on top of each other
 - **Multi-select** — Ctrl+click to select multiple blocks and move them together
 - **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
+- **Floating widget** — Toggle an always-on-top mini window that shows your current time block, visible even when the app is in the background
 - **Current time line** — A red line shows the current time, updating every minute
 - **15-minute snap grid** — All times snap to 15-minute increments
 - **Auto-save** — Changes save automatically after 300ms of inactivity
