@@ -15,9 +15,15 @@ function getDataDir(): string {
 }
 
 function createWindow(): void {
+  const cursorPoint = screen.getCursorScreenPoint();
+  const display = screen.getDisplayNearestPoint(cursorPoint);
+  const { x, y, width: areaW, height: areaH } = display.workArea;
+
   mainWindow = new BrowserWindow({
     width: 500,
     height: 900,
+    x: x + Math.round((areaW - 500) / 2),
+    y: y + Math.round((areaH - 900) / 2),
     minWidth: 380,
     minHeight: 600,
     backgroundColor: '#1a1a2e',
@@ -55,15 +61,17 @@ function createWindow(): void {
 }
 
 function createWidgetWindow(): void {
-  const { workAreaSize } = screen.getPrimaryDisplay();
+  const cursorPoint = screen.getCursorScreenPoint();
+  const display = screen.getDisplayNearestPoint(cursorPoint);
+  const { x: areaX, y: areaY, width: areaW, height: areaH } = display.workArea;
   const width = 300;
   const height = 96;
 
   widgetWindow = new BrowserWindow({
     width,
     height,
-    x: workAreaSize.width - width - 16,
-    y: workAreaSize.height - height - 16,
+    x: areaX + areaW - width - 16,
+    y: areaY + areaH - height - 16,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
