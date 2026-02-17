@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('active-entry-update', handler);
     return () => ipcRenderer.removeListener('active-entry-update', handler);
   },
+  focusMainWindow: (): void => {
+    ipcRenderer.send('focus-main-window');
+  },
   onWidgetToggled: (cb: (open: boolean) => void): (() => void) => {
     const handler = (_event: Electron.IpcRendererEvent, open: boolean) => cb(open);
     ipcRenderer.on('widget-toggled', handler);

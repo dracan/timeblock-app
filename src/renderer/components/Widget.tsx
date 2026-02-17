@@ -37,7 +37,7 @@ export default function Widget() {
   }, [entry]);
 
   return (
-    <div className="widget">
+    <div className="widget" onClick={() => window.electronAPI?.focusMainWindow?.()}>
       {entry ? (
         <>
           <div className="widget-accent" style={{ background: entry.color }} />

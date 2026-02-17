@@ -14,6 +14,7 @@ export interface ElectronAPI {
   toggleWidget: () => void;
   sendActiveEntry: (entry: TimeEntry | null) => void;
   onActiveEntryUpdate: (cb: (entry: TimeEntry | null) => void) => () => void;
+  focusMainWindow: () => void;
   onWidgetToggled: (cb: (open: boolean) => void) => () => void;
 }
 

@@ -25,6 +25,8 @@ body {
   border: 1px solid #2a2a4a;
   border-radius: 10px;
   overflow: hidden;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
 }
 
 .widget-accent {

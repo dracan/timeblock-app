@@ -128,6 +128,13 @@ ipcMain.on('toggle-widget', () => {
   }
 });
 
+ipcMain.on('focus-main-window', () => {
+  if (mainWindow) {
+    mainWindow.show();
+    mainWindow.focus();
+  }
+});
+
 ipcMain.on('active-entry-changed', (_event, entry) => {
   lastActiveEntry = entry;
   if (widgetWindow) {
