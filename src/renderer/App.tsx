@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { TimeEntry } from './types';
+import { TimeEntry, UpdateInfo } from './types';
 import { entriesToMarkdown, markdownToEntries } from './utils/markdown';
 import Timeline from './components/Timeline';
 
@@ -41,6 +41,14 @@ export default function App() {
     : undefined;
 
   const [widgetOpen, setWidgetOpen] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+
+  // Check for updates on mount
+  useEffect(() => {
+    window.electronAPI?.checkForUpdate().then((info) => {
+      if (info) setUpdateInfo(info);
+    });
+  }, []);
 
   // Send active entry to widget whenever it changes
   useEffect(() => {
@@ -153,18 +161,29 @@ export default function App() {
             </svg>
           </button>
         </div>
-        {window.electronAPI && (
-          <button
-            className={`widget-toggle-btn${widgetOpen ? ' active' : ''}`}
-            onClick={() => window.electronAPI.toggleWidget()}
-            title={widgetOpen ? 'Hide floating widget' : 'Show floating widget'}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              <rect x="4" y="4" width="8" height="5" rx="1" fill="currentColor" opacity="0.6" />
-            </svg>
-          </button>
-        )}
+        <div className="header-right">
+          {updateInfo && (
+            <button
+              className="update-badge"
+              onClick={() => window.electronAPI?.openExternal(updateInfo.releaseUrl)}
+              title={`Update available: v${updateInfo.latestVersion} (current: v${updateInfo.currentVersion})`}
+            >
+              v{updateInfo.latestVersion} available
+            </button>
+          )}
+          {window.electronAPI && (
+            <button
+              className={`widget-toggle-btn${widgetOpen ? ' active' : ''}`}
+              onClick={() => window.electronAPI.toggleWidget()}
+              title={widgetOpen ? 'Hide floating widget' : 'Show floating widget'}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <rect x="4" y="4" width="8" height="5" rx="1" fill="currentColor" opacity="0.6" />
+              </svg>
+            </button>
+          )}
+        </div>
       </header>
       <Timeline entries={entries} onEntriesChange={updateEntries} isToday={isToday} />
       {activeEntry && (

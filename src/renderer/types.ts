@@ -7,6 +7,12 @@ export interface TimeEntry {
   done?: boolean;
 }
 
+export interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string;
+  releaseUrl: string;
+}
+
 export interface ElectronAPI {
   saveDay: (dateStr: string, content: string) => Promise<boolean>;
   loadDay: (dateStr: string) => Promise<string | null>;
@@ -19,6 +25,8 @@ export interface ElectronAPI {
   widgetDragMove: (screenX: number, screenY: number) => void;
   widgetDragEnd: () => void;
   onWidgetToggled: (cb: (open: boolean) => void) => () => void;
+  checkForUpdate: () => Promise<UpdateInfo | null>;
+  openExternal: (url: string) => Promise<void>;
 }
 
 declare global {

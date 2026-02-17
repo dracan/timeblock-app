@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -162,6 +162,43 @@ ipcMain.on('active-entry-changed', (_event, entry) => {
   if (widgetWindow) {
     widgetWindow.webContents.send('active-entry-update', entry);
   }
+});
+
+function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na !== nb) return na - nb;
+  }
+  return 0;
+}
+
+ipcMain.handle('check-for-update', async () => {
+  try {
+    const currentVersion = app.getVersion();
+    const res = await fetch('https://api.github.com/repos/dracan/timeblock-app/releases/latest', {
+      headers: { 'User-Agent': 'timeblock-app' },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const latestVersion = (data.tag_name as string).replace(/^v/, '');
+    if (compareVersions(latestVersion, currentVersion) > 0) {
+      return {
+        currentVersion,
+        latestVersion,
+        releaseUrl: data.html_url as string,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+});
+
+ipcMain.handle('open-external', async (_event, url: string) => {
+  await shell.openExternal(url);
 });
 
 app.whenReady().then(createWindow);

@@ -35,4 +35,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('widget-toggled', handler);
     return () => ipcRenderer.removeListener('widget-toggled', handler);
   },
+  checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
 });
