@@ -195,7 +195,7 @@ body {
 /* Current time indicator */
 .current-time-line {
   position: absolute;
-  left: 0;
+  left: -70px;
   right: 0;
   height: 2px;
   background: #ef4444;
