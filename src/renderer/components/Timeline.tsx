@@ -98,11 +98,11 @@ export default function Timeline({ days, onEntriesChange }: TimelineProps) {
           prev.type === 'creating' ? { ...prev, currentY: y } : prev
         );
       } else if (dragMode.type === 'moving') {
-        const dayEntries = days[dragMode.dayIndex]?.entries || [];
+        const currentDayIndex = getColumnIndex(e.clientX);
         const deltaY = y - dragMode.offsetY;
         const deltaMinutes = snapToGrid(pixelsToMinutes(deltaY, hourHeight) - DAY_START_HOUR * 60);
 
-        const updated = dayEntries.map((entry) => {
+        const applyDelta = (entry: TimeEntry): TimeEntry => {
           const origStart = dragMode.startMinutesMap.get(entry.id);
           if (origStart === undefined) return entry;
           const duration = entry.endMinutes - entry.startMinutes;
@@ -112,8 +112,28 @@ export default function Timeline({ days, onEntriesChange }: TimelineProps) {
             startMinutes: Math.max(DAY_START_HOUR * 60, Math.min(DAY_END_HOUR * 60 - duration, newStart)),
             endMinutes: Math.max(DAY_START_HOUR * 60 + duration, Math.min(DAY_END_HOUR * 60, newStart + duration)),
           };
-        });
-        onEntriesChange(days[dragMode.dayIndex].dateStr, updated);
+        };
+
+        if (currentDayIndex === dragMode.dayIndex) {
+          // Same-day move
+          const dayEntries = days[dragMode.dayIndex]?.entries || [];
+          const updated = dayEntries.map(applyDelta);
+          onEntriesChange(days[dragMode.dayIndex].dateStr, updated);
+        } else {
+          // Cross-day transfer
+          const movingIds = dragMode.startMinutesMap;
+          const sourceDayEntries = days[dragMode.dayIndex]?.entries || [];
+          const targetDayEntries = days[currentDayIndex]?.entries || [];
+
+          const remaining = sourceDayEntries.filter((e) => !movingIds.has(e.id));
+          const movedEntries = sourceDayEntries
+            .filter((e) => movingIds.has(e.id))
+            .map(applyDelta);
+
+          onEntriesChange(days[dragMode.dayIndex].dateStr, remaining);
+          onEntriesChange(days[currentDayIndex].dateStr, [...targetDayEntries, ...movedEntries]);
+          setDragMode((prev) => prev.type === 'moving' ? { ...prev, dayIndex: currentDayIndex } : prev);
+        }
       } else if (dragMode.type === 'resizing') {
         const dayEntries = days[dragMode.dayIndex]?.entries || [];
         const minutes = snapToGrid(pixelsToMinutes(y, hourHeight));
@@ -165,7 +185,7 @@ export default function Timeline({ days, onEntriesChange }: TimelineProps) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragMode, days, onEntriesChange, getTimelineY, hourHeight]);
+  }, [dragMode, days, onEntriesChange, getTimelineY, getColumnIndex, hourHeight]);
 
   // --- Entry interactions ---
   const handleBlockMouseDown = useCallback(
