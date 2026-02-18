@@ -487,6 +487,53 @@ body {
   background: rgba(239, 68, 68, 0.3);
 }
 
+/* Day column headers bar (outside scroll area) */
+.day-column-headers {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.day-column-header {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 6px 0;
+}
+
+.day-column-header.today {
+  color: var(--accent);
+}
+
+/* Day columns inside timeline */
+.day-columns {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.day-column {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.day-column + .day-column {
+  border-left: 1px solid var(--border-color);
+}
+
+/* Per-column current time line (no gutter extension) */
+.day-column .current-time-line {
+  left: 0;
+  right: 0;
+}
+
 /* Now panel */
 .now-panel {
   flex-shrink: 0;

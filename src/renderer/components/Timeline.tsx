@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
-import { TimeEntry } from '../types';
+import { TimeEntry, DayColumn } from '../types';
 import TimeBlock from './TimeBlock';
 import ColorMenu from './ColorMenu';
 import {
@@ -20,30 +20,30 @@ import {
 import { computeOverlapLayout } from '../utils/overlap';
 
 interface TimelineProps {
-  entries: TimeEntry[];
-  onEntriesChange: (entries: TimeEntry[]) => void;
-  isToday: boolean;
+  days: DayColumn[];
+  onEntriesChange: (dateStr: string, entries: TimeEntry[]) => void;
 }
 
 type DragMode =
   | { type: 'none' }
-  | { type: 'creating'; startY: number; currentY: number }
-  | { type: 'moving'; entryId: string; offsetY: number; startMinutesMap: Map<string, number> }
-  | { type: 'resizing'; entryId: string; edge: 'top' | 'bottom' };
+  | { type: 'creating'; dayIndex: number; startY: number; currentY: number }
+  | { type: 'moving'; dayIndex: number; entryId: string; offsetY: number; startMinutesMap: Map<string, number> }
+  | { type: 'resizing'; dayIndex: number; entryId: string; edge: 'top' | 'bottom' };
 
 const DEFAULT_COLOR = '#4a9eff';
 
-export default function Timeline({ entries, onEntriesChange, isToday }: TimelineProps) {
+export default function Timeline({ days, onEntriesChange }: TimelineProps) {
   const [dragMode, setDragMode] = useState<DragMode>({ type: 'none' });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [colorMenu, setColorMenu] = useState<{ x: number; y: number; entryId: string } | null>(null);
+  const [colorMenu, setColorMenu] = useState<{ x: number; y: number; entryId: string; dayIndex: number } | null>(null);
   const [hourHeight, setHourHeight] = useState(DEFAULT_HOUR_HEIGHT);
   const [currentMinutes, setCurrentMinutes] = useState(() => {
     const now = new Date();
     return now.getHours() * 60 + now.getMinutes();
   });
   const timelineRef = useRef<HTMLDivElement>(null);
+  const dayColumnsRef = useRef<HTMLDivElement>(null);
   const pendingScrollRef = useRef<{ timeAtCursor: number; cursorOffsetInContainer: number } | null>(null);
 
   const hours = [];
@@ -56,6 +56,15 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
     const rect = timelineRef.current.getBoundingClientRect();
     return clientY - rect.top + timelineRef.current.scrollTop;
   }, []);
+
+  // Determine which day column was clicked based on clientX
+  const getColumnIndex = useCallback((clientX: number): number => {
+    if (!dayColumnsRef.current || days.length <= 1) return 0;
+    const rect = dayColumnsRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const colWidth = rect.width / days.length;
+    return Math.max(0, Math.min(days.length - 1, Math.floor(x / colWidth)));
+  }, [days.length]);
 
   // --- Click-drag to create ---
   const handleTimelineMouseDown = useCallback(
@@ -70,10 +79,11 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
       }
 
       const y = getTimelineY(e.clientY);
-      setDragMode({ type: 'creating', startY: y, currentY: y });
+      const dayIndex = getColumnIndex(e.clientX);
+      setDragMode({ type: 'creating', dayIndex, startY: y, currentY: y });
       setColorMenu(null);
     },
-    [getTimelineY]
+    [getTimelineY, getColumnIndex]
   );
 
   // --- Mouse move handler (all drag modes) ---
@@ -88,10 +98,11 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
           prev.type === 'creating' ? { ...prev, currentY: y } : prev
         );
       } else if (dragMode.type === 'moving') {
+        const dayEntries = days[dragMode.dayIndex]?.entries || [];
         const deltaY = y - dragMode.offsetY;
         const deltaMinutes = snapToGrid(pixelsToMinutes(deltaY, hourHeight) - DAY_START_HOUR * 60);
 
-        const updated = entries.map((entry) => {
+        const updated = dayEntries.map((entry) => {
           const origStart = dragMode.startMinutesMap.get(entry.id);
           if (origStart === undefined) return entry;
           const duration = entry.endMinutes - entry.startMinutes;
@@ -102,10 +113,11 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
             endMinutes: Math.max(DAY_START_HOUR * 60 + duration, Math.min(DAY_END_HOUR * 60, newStart + duration)),
           };
         });
-        onEntriesChange(updated);
+        onEntriesChange(days[dragMode.dayIndex].dateStr, updated);
       } else if (dragMode.type === 'resizing') {
+        const dayEntries = days[dragMode.dayIndex]?.entries || [];
         const minutes = snapToGrid(pixelsToMinutes(y, hourHeight));
-        const updated = entries.map((entry) => {
+        const updated = dayEntries.map((entry) => {
           if (entry.id !== dragMode.entryId) return entry;
           if (dragMode.edge === 'top') {
             const newStart = Math.min(minutes, entry.endMinutes - 15);
@@ -115,7 +127,7 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
             return { ...entry, endMinutes: Math.min(DAY_END_HOUR * 60, newEnd) };
           }
         });
-        onEntriesChange(updated);
+        onEntriesChange(days[dragMode.dayIndex].dateStr, updated);
       }
     };
 
@@ -131,6 +143,7 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
           const startMin = snapToGrid(pixelsToMinutes(minY, hourHeight));
           const endMin = snapToGrid(pixelsToMinutes(maxY, hourHeight));
           if (endMin > startMin) {
+            const dayEntries = days[dragMode.dayIndex]?.entries || [];
             const newEntry: TimeEntry = {
               id: generateId(),
               title: 'New Block',
@@ -138,7 +151,7 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
               endMinutes: Math.min(DAY_END_HOUR * 60, endMin),
               color: DEFAULT_COLOR,
             };
-            onEntriesChange([...entries, newEntry]);
+            onEntriesChange(days[dragMode.dayIndex].dateStr, [...dayEntries, newEntry]);
             setEditingId(newEntry.id);
           }
         }
@@ -152,11 +165,11 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragMode, entries, onEntriesChange, getTimelineY, hourHeight]);
+  }, [dragMode, days, onEntriesChange, getTimelineY, hourHeight]);
 
   // --- Entry interactions ---
   const handleBlockMouseDown = useCallback(
-    (e: React.MouseEvent, entryId: string) => {
+    (e: React.MouseEvent, entryId: string, dayIndex: number) => {
       if (e.button !== 0) return;
       e.stopPropagation();
       setColorMenu(null);
@@ -183,9 +196,10 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
 
       // Start moving
       const y = getTimelineY(e.clientY);
+      const dayEntries = days[dayIndex]?.entries || [];
       const idsToMove = newSelected.size > 0 ? newSelected : new Set([entryId]);
       const startMinutesMap = new Map<string, number>();
-      entries.forEach((entry) => {
+      dayEntries.forEach((entry) => {
         if (idsToMove.has(entry.id)) {
           startMinutesMap.set(entry.id, entry.startMinutes);
         }
@@ -193,32 +207,33 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
 
       setDragMode({
         type: 'moving',
+        dayIndex,
         entryId,
         offsetY: y,
         startMinutesMap,
       });
     },
-    [selectedIds, entries, getTimelineY]
+    [selectedIds, days, getTimelineY]
   );
 
   const handleResizeStart = useCallback(
-    (e: React.MouseEvent, entryId: string, edge: 'top' | 'bottom') => {
+    (e: React.MouseEvent, entryId: string, edge: 'top' | 'bottom', dayIndex: number) => {
       e.stopPropagation();
       e.preventDefault();
       setColorMenu(null);
-      setDragMode({ type: 'resizing', entryId, edge });
+      setDragMode({ type: 'resizing', dayIndex, entryId, edge });
     },
     []
   );
 
   const handleContextMenu = useCallback(
-    (e: React.MouseEvent, entryId: string) => {
+    (e: React.MouseEvent, entryId: string, dayIndex: number) => {
       e.preventDefault();
       e.stopPropagation();
       if (!selectedIds.has(entryId)) {
         setSelectedIds(new Set([entryId]));
       }
-      setColorMenu({ x: e.clientX, y: e.clientY, entryId });
+      setColorMenu({ x: e.clientX, y: e.clientY, entryId, dayIndex });
     },
     [selectedIds]
   );
@@ -227,69 +242,90 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
     (color: string) => {
       if (!colorMenu) return;
       const idsToUpdate = selectedIds.size > 0 ? selectedIds : new Set([colorMenu.entryId]);
-      const updated = entries.map((entry) =>
-        idsToUpdate.has(entry.id) ? { ...entry, color } : entry
-      );
-      onEntriesChange(updated);
+      // Apply across all days (selection can span days)
+      for (const day of days) {
+        const hasAny = day.entries.some((e) => idsToUpdate.has(e.id));
+        if (hasAny) {
+          const updated = day.entries.map((entry) =>
+            idsToUpdate.has(entry.id) ? { ...entry, color } : entry
+          );
+          onEntriesChange(day.dateStr, updated);
+        }
+      }
       setColorMenu(null);
     },
-    [colorMenu, selectedIds, entries, onEntriesChange]
+    [colorMenu, selectedIds, days, onEntriesChange]
   );
 
   const handleTitleChange = useCallback(
-    (entryId: string, title: string) => {
-      const updated = entries.map((entry) =>
+    (entryId: string, title: string, dayIndex: number) => {
+      const dayEntries = days[dayIndex]?.entries || [];
+      const updated = dayEntries.map((entry) =>
         entry.id === entryId ? { ...entry, title } : entry
       );
-      onEntriesChange(updated);
+      onEntriesChange(days[dayIndex].dateStr, updated);
     },
-    [entries, onEntriesChange]
+    [days, onEntriesChange]
   );
 
   const handleToggleDone = useCallback(
-    (entryId: string) => {
-      const updated = entries.map((entry) =>
+    (entryId: string, dayIndex: number) => {
+      const dayEntries = days[dayIndex]?.entries || [];
+      const updated = dayEntries.map((entry) =>
         entry.id === entryId ? { ...entry, done: !entry.done } : entry
       );
-      onEntriesChange(updated);
+      onEntriesChange(days[dayIndex].dateStr, updated);
     },
-    [entries, onEntriesChange]
+    [days, onEntriesChange]
   );
 
   const handleDuplicate = useCallback(
-    (entryId: string) => {
-      const entry = entries.find((e) => e.id === entryId);
+    (entryId: string, dayIndex: number) => {
+      const dayEntries = days[dayIndex]?.entries || [];
+      const entry = dayEntries.find((e) => e.id === entryId);
       if (!entry) return;
       const newEntry: TimeEntry = {
         ...entry,
         id: generateId(),
       };
-      onEntriesChange([...entries, newEntry]);
+      onEntriesChange(days[dayIndex].dateStr, [...dayEntries, newEntry]);
       setSelectedIds(new Set([newEntry.id]));
       setColorMenu(null);
     },
-    [entries, onEntriesChange]
+    [days, onEntriesChange]
   );
 
   const handleDelete = useCallback(
-    (entryId: string) => {
+    (entryId: string, dayIndex: number) => {
       const idsToDelete = selectedIds.size > 0 && selectedIds.has(entryId)
         ? selectedIds
         : new Set([entryId]);
-      const updated = entries.filter((entry) => !idsToDelete.has(entry.id));
-      onEntriesChange(updated);
+      // Delete across all days
+      for (const day of days) {
+        const hasAny = day.entries.some((e) => idsToDelete.has(e.id));
+        if (hasAny) {
+          const updated = day.entries.filter((entry) => !idsToDelete.has(entry.id));
+          onEntriesChange(day.dateStr, updated);
+        }
+      }
       setSelectedIds(new Set());
       setColorMenu(null);
     },
-    [selectedIds, entries, onEntriesChange]
+    [selectedIds, days, onEntriesChange]
   );
 
   // Global keydown for delete
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' && selectedIds.size > 0 && !editingId) {
-        const updated = entries.filter((entry) => !selectedIds.has(entry.id));
-        onEntriesChange(updated);
+        // Delete across all days
+        for (const day of days) {
+          const hasAny = day.entries.some((entry) => selectedIds.has(entry.id));
+          if (hasAny) {
+            const updated = day.entries.filter((entry) => !selectedIds.has(entry.id));
+            onEntriesChange(day.dateStr, updated);
+          }
+        }
         setSelectedIds(new Set());
       }
       if (e.key === 'Escape') {
@@ -300,7 +336,7 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, editingId, entries, onEntriesChange]);
+  }, [selectedIds, editingId, days, onEntriesChange]);
 
   // Current time updater
   useEffect(() => {
@@ -360,60 +396,47 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
     el.scrollTop = minutesToPixels(9 * 60, newHourHeight);
   }, []);
 
-  // Build layout entries (real entries + phantom creation preview entry)
+  // Build per-day layout maps and creation preview
   const CREATION_PREVIEW_ID = '__creation_preview__';
-  let previewStartMin = 0;
-  let previewEndMin = 0;
-  if (dragMode.type === 'creating') {
-    const minY = Math.min(dragMode.startY, dragMode.currentY);
-    const maxY = Math.max(dragMode.startY, dragMode.currentY);
-    if (maxY - minY > 5) {
-      previewStartMin = Math.max(DAY_START_HOUR * 60, snapToGrid(pixelsToMinutes(minY, hourHeight)));
-      previewEndMin = Math.min(DAY_END_HOUR * 60, snapToGrid(pixelsToMinutes(maxY, hourHeight)));
-    }
-  }
+  const isMultiDay = days.length > 1;
 
-  const layoutEntries = useMemo(() => {
-    const all = [...entries];
-    if (previewStartMin < previewEndMin) {
-      all.push({
-        id: CREATION_PREVIEW_ID,
-        title: '',
-        startMinutes: previewStartMin,
-        endMinutes: previewEndMin,
-        color: '',
-      });
-    }
-    return all;
-  }, [entries, previewStartMin, previewEndMin]);
+  const perDayData = useMemo(() => {
+    return days.map((day, dayIndex) => {
+      let previewStartMin = 0;
+      let previewEndMin = 0;
+      if (dragMode.type === 'creating' && dragMode.dayIndex === dayIndex) {
+        const minY = Math.min(dragMode.startY, dragMode.currentY);
+        const maxY = Math.max(dragMode.startY, dragMode.currentY);
+        if (maxY - minY > 5) {
+          previewStartMin = Math.max(DAY_START_HOUR * 60, snapToGrid(pixelsToMinutes(minY, hourHeight)));
+          previewEndMin = Math.min(DAY_END_HOUR * 60, snapToGrid(pixelsToMinutes(maxY, hourHeight)));
+        }
+      }
 
-  const layoutMap = useMemo(() => computeOverlapLayout(layoutEntries), [layoutEntries]);
+      const layoutEntries = [...day.entries];
+      if (previewStartMin < previewEndMin) {
+        layoutEntries.push({
+          id: CREATION_PREVIEW_ID,
+          title: '',
+          startMinutes: previewStartMin,
+          endMinutes: previewEndMin,
+          color: '',
+        });
+      }
 
-  // Creation preview
-  let creationPreview: React.ReactNode = null;
-  if (previewStartMin < previewEndMin) {
-    const previewLayout = layoutMap.get(CREATION_PREVIEW_ID);
-    const leftPercent = previewLayout ? (previewLayout.columnIndex / previewLayout.totalColumns) * 100 : 0;
-    const widthPercent = previewLayout ? (1 / previewLayout.totalColumns) * 100 : 100;
-    creationPreview = (
-      <div
-        className="creation-preview"
-        style={{
-          top: minutesToPixels(previewStartMin, hourHeight),
-          height: minutesToPixels(previewEndMin, hourHeight) -
-            minutesToPixels(previewStartMin, hourHeight),
-          left: `${leftPercent}%`,
-          width: `calc(${widthPercent}% - 1px)`,
-        }}
-      >
-        <span className="creation-preview-time">
-          {formatTime(previewStartMin)} -{' '}
-          {formatTime(previewEndMin)}{' '}
-          ({formatDuration(previewEndMin - previewStartMin)})
-        </span>
-      </div>
-    );
-  }
+      const layoutMap = computeOverlapLayout(layoutEntries);
+
+      return {
+        day,
+        dayIndex,
+        previewStartMin,
+        previewEndMin,
+        layoutMap,
+      };
+    });
+  }, [days, dragMode, hourHeight]);
+
+  const showCurrentTimeLine = currentMinutes >= DAY_START_HOUR * 60 && currentMinutes <= DAY_END_HOUR * 60;
 
   return (
     <div className="timeline-container" ref={timelineRef}>
@@ -438,39 +461,76 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
           </div>
         ))}
 
-        {/* Current time indicator */}
-        {isToday && currentMinutes >= DAY_START_HOUR * 60 && currentMinutes <= DAY_END_HOUR * 60 && (
+        {/* Current time indicator — single-day mode only (spans gutter) */}
+        {!isMultiDay && days[0]?.isToday && showCurrentTimeLine && (
           <div
             className="current-time-line"
             style={{ top: minutesToPixels(currentMinutes, hourHeight) }}
           />
         )}
 
-        {/* Creation preview */}
-        {creationPreview}
+        {/* Day columns overlay */}
+        <div className="day-columns" ref={dayColumnsRef}>
+          {perDayData.map(({ day, dayIndex, previewStartMin, previewEndMin, layoutMap }) => (
+            <div className="day-column" key={day.dateStr}>
+              {/* Per-column current time line (multi-day mode) */}
+              {isMultiDay && day.isToday && showCurrentTimeLine && (
+                <div
+                  className="current-time-line"
+                  style={{ top: minutesToPixels(currentMinutes, hourHeight) }}
+                />
+              )}
 
-        {/* Time entries */}
-        {entries.map((entry) => {
-          const layout = layoutMap.get(entry.id);
-          return (
-            <TimeBlock
-              key={entry.id}
-              entry={entry}
-              hourHeight={hourHeight}
-              isSelected={selectedIds.has(entry.id)}
-              isEditing={editingId === entry.id}
-              columnIndex={layout?.columnIndex}
-              totalColumns={layout?.totalColumns}
-              onMouseDown={(e) => handleBlockMouseDown(e, entry.id)}
-              onResizeStart={(e, edge) => handleResizeStart(e, entry.id, edge)}
-              onContextMenu={(e) => handleContextMenu(e, entry.id)}
-              onTitleChange={(title) => handleTitleChange(entry.id, title)}
-              onTitleBlur={() => setEditingId(null)}
-              onTitleDoubleClick={() => setEditingId(entry.id)}
-              onToggleDone={() => handleToggleDone(entry.id)}
-            />
-          );
-        })}
+              {/* Creation preview */}
+              {previewStartMin < previewEndMin && (() => {
+                const previewLayout = layoutMap.get(CREATION_PREVIEW_ID);
+                const leftPercent = previewLayout ? (previewLayout.columnIndex / previewLayout.totalColumns) * 100 : 0;
+                const widthPercent = previewLayout ? (1 / previewLayout.totalColumns) * 100 : 100;
+                return (
+                  <div
+                    className="creation-preview"
+                    style={{
+                      top: minutesToPixels(previewStartMin, hourHeight),
+                      height: minutesToPixels(previewEndMin, hourHeight) -
+                        minutesToPixels(previewStartMin, hourHeight),
+                      left: `${leftPercent}%`,
+                      width: `calc(${widthPercent}% - 1px)`,
+                    }}
+                  >
+                    <span className="creation-preview-time">
+                      {formatTime(previewStartMin)} -{' '}
+                      {formatTime(previewEndMin)}{' '}
+                      ({formatDuration(previewEndMin - previewStartMin)})
+                    </span>
+                  </div>
+                );
+              })()}
+
+              {/* Time entries */}
+              {day.entries.map((entry) => {
+                const layout = layoutMap.get(entry.id);
+                return (
+                  <TimeBlock
+                    key={entry.id}
+                    entry={entry}
+                    hourHeight={hourHeight}
+                    isSelected={selectedIds.has(entry.id)}
+                    isEditing={editingId === entry.id}
+                    columnIndex={layout?.columnIndex}
+                    totalColumns={layout?.totalColumns}
+                    onMouseDown={(e) => handleBlockMouseDown(e, entry.id, dayIndex)}
+                    onResizeStart={(e, edge) => handleResizeStart(e, entry.id, edge, dayIndex)}
+                    onContextMenu={(e) => handleContextMenu(e, entry.id, dayIndex)}
+                    onTitleChange={(title) => handleTitleChange(entry.id, title, dayIndex)}
+                    onTitleBlur={() => setEditingId(null)}
+                    onTitleDoubleClick={() => setEditingId(entry.id)}
+                    onToggleDone={() => handleToggleDone(entry.id, dayIndex)}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Color context menu */}
@@ -479,8 +539,8 @@ export default function Timeline({ entries, onEntriesChange, isToday }: Timeline
           x={colorMenu.x}
           y={colorMenu.y}
           onSelect={handleColorSelect}
-          onDuplicate={() => handleDuplicate(colorMenu.entryId)}
-          onDelete={() => handleDelete(colorMenu.entryId)}
+          onDuplicate={() => handleDuplicate(colorMenu.entryId, colorMenu.dayIndex)}
+          onDelete={() => handleDelete(colorMenu.entryId, colorMenu.dayIndex)}
           onClose={() => setColorMenu(null)}
         />
       )}

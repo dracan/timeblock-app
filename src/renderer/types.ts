@@ -7,6 +7,13 @@ export interface TimeEntry {
   done?: boolean;
 }
 
+export interface DayColumn {
+  date: Date;
+  dateStr: string;
+  entries: TimeEntry[];
+  isToday: boolean;
+}
+
 export interface WidgetData {
   active: TimeEntry | null;
   next: TimeEntry | null;
