@@ -495,7 +495,7 @@ export default function Timeline({ days, onEntriesChange, todayStr, todayEntries
         {hours.map((hour) => (
           <div
             key={hour}
-            className="hour-row"
+            className={`hour-row${hour < 9 || hour >= 18 ? ' off-hours' : ''}`}
             style={{
               top: minutesToPixels(hour * 60, hourHeight),
               height: hourHeight,

@@ -24,6 +24,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Update notifications** — On startup, the app checks GitHub for newer releases. If one is available, a small badge appears in the header; clicking it opens the release page in your browser
 - **Day navigation** — Arrow buttons in the header let you browse past and future days for review and planning. A "Today" button appears when viewing other days to jump back quickly. The current time line and "Now Doing" panel only appear when viewing today
 - **Multi-monitor support** — The main window and floating widget open on whichever monitor the mouse cursor is on
+- **Off-hours tint** — Hours before 9 AM and after 6 PM have a subtle darker background so the working day boundaries are immediately visible
 - **Current time line** — A red line shows the current time, updating every minute
 - **15-minute snap grid** — All times snap to 15-minute increments
 - **Auto-save** — Changes save automatically after 300ms of inactivity
