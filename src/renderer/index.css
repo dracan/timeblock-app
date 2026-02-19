@@ -127,6 +127,14 @@ body {
   cursor: default;
 }
 
+.date-nav-btn.today-btn {
+  width: auto;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
 .app-header h1 {
   font-size: 22px;
   font-weight: 600;

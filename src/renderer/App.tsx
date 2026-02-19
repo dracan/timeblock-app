@@ -170,6 +170,10 @@ export default function App() {
     setSelectedDate((prev) => addDays(prev, 1));
   }, []);
 
+  const goToToday = useCallback(() => {
+    setSelectedDate(new Date());
+  }, []);
+
   // Build DayColumn[] for Timeline
   const dayColumns: DayColumn[] = useMemo(() => {
     return visibleDates.map((date) => {
@@ -228,6 +232,15 @@ export default function App() {
               <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          {!isTodayVisible && (
+            <button
+              className="date-nav-btn today-btn"
+              onClick={goToToday}
+              title="Go to today"
+            >
+              Today
+            </button>
+          )}
         </div>
         <div className="header-right">
           {updateInfo && (
