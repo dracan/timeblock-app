@@ -80,7 +80,7 @@ export default function TimeBlock({
     >
       {/* Tooltip */}
       {tooltipPos && !isEditing && entry.title && (
-        <div className="time-block-tooltip" style={{ left: tooltipPos.x, top: tooltipPos.y }}>{entry.title}</div>
+        <div className="time-block-tooltip" style={{ left: tooltipPos.x, top: tooltipPos.y }}>{entry.title} — {formatTime(entry.startMinutes)} - {formatTime(entry.endMinutes)} ({formatDuration(entry.endMinutes - entry.startMinutes)})</div>
       )}
 
       {/* Resize handles */}
