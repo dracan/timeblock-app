@@ -20,9 +20,10 @@ interface ColorMenuProps {
   onDuplicate: () => void;
   onDelete: () => void;
   onClose: () => void;
+  onSendToToday?: () => void;
 }
 
-export default function ColorMenu({ x, y, onSelect, onDuplicate, onDelete, onClose }: ColorMenuProps) {
+export default function ColorMenu({ x, y, onSelect, onDuplicate, onDelete, onClose, onSendToToday }: ColorMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,6 +66,11 @@ export default function ColorMenu({ x, y, onSelect, onDuplicate, onDelete, onClo
       <button className="color-menu-action" onClick={onDuplicate}>
         Duplicate
       </button>
+      {onSendToToday && (
+        <button className="color-menu-action" onClick={onSendToToday}>
+          Send to Today
+        </button>
+      )}
       <button className="color-menu-delete" onClick={onDelete}>
         Delete
       </button>

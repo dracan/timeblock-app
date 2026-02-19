@@ -12,6 +12,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Move and resize** — Drag blocks to reposition them, or pull the edges to adjust duration
 - **Color-code** — Right-click any block to pick from 10 preset colors
 - **Duplicate and delete** — Right-click context menu includes Duplicate to clone a block and Delete to remove it (or press the Delete key)
+- **Send to Today** — Right-click a block on a past or future date and choose "Send to Today" to move it (keeping its time range) to today's schedule. Works with multi-select
 - **Done checkbox** — Click the checkbox on any block to mark it complete (turns green with a checkmark)
 - **Inline editing** — Click a block's title to rename it in place (Enter to confirm, Escape to cancel)
 - **Overlapping blocks** — Overlapping blocks display side-by-side (like Google Calendar) instead of stacking on top of each other

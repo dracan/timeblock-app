@@ -279,7 +279,7 @@ export default function App() {
           ))}
         </div>
       )}
-      <Timeline days={dayColumns} onEntriesChange={handleEntriesChange} />
+      <Timeline days={dayColumns} onEntriesChange={handleEntriesChange} todayStr={todayStr} todayEntries={todayEntries} />
       {activeEntry && (
         <div className="now-panel">
           <div

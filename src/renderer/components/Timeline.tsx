@@ -22,6 +22,8 @@ import { computeOverlapLayout } from '../utils/overlap';
 interface TimelineProps {
   days: DayColumn[];
   onEntriesChange: (dateStr: string, entries: TimeEntry[]) => void;
+  todayStr: string;
+  todayEntries: TimeEntry[];
 }
 
 type DragMode =
@@ -32,7 +34,7 @@ type DragMode =
 
 const DEFAULT_COLOR = '#4a9eff';
 
-export default function Timeline({ days, onEntriesChange }: TimelineProps) {
+export default function Timeline({ days, onEntriesChange, todayStr, todayEntries }: TimelineProps) {
   const [dragMode, setDragMode] = useState<DragMode>({ type: 'none' });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -334,6 +336,30 @@ export default function Timeline({ days, onEntriesChange }: TimelineProps) {
     [selectedIds, days, onEntriesChange]
   );
 
+  const handleSendToToday = useCallback(
+    () => {
+      if (!colorMenu) return;
+      const idsToMove = selectedIds.size > 0 && selectedIds.has(colorMenu.entryId)
+        ? selectedIds
+        : new Set([colorMenu.entryId]);
+      // Collect entries to move and remove them from source days
+      const entriesToMove: TimeEntry[] = [];
+      for (const day of days) {
+        const matched = day.entries.filter((e) => idsToMove.has(e.id));
+        if (matched.length > 0) {
+          entriesToMove.push(...matched);
+          const remaining = day.entries.filter((e) => !idsToMove.has(e.id));
+          onEntriesChange(day.dateStr, remaining);
+        }
+      }
+      // Append to today
+      onEntriesChange(todayStr, [...todayEntries, ...entriesToMove]);
+      setSelectedIds(new Set());
+      setColorMenu(null);
+    },
+    [colorMenu, selectedIds, days, onEntriesChange, todayStr, todayEntries]
+  );
+
   // Global keydown for delete
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -562,6 +588,7 @@ export default function Timeline({ days, onEntriesChange }: TimelineProps) {
           onDuplicate={() => handleDuplicate(colorMenu.entryId, colorMenu.dayIndex)}
           onDelete={() => handleDelete(colorMenu.entryId, colorMenu.dayIndex)}
           onClose={() => setColorMenu(null)}
+          onSendToToday={days[colorMenu.dayIndex]?.dateStr !== todayStr ? handleSendToToday : undefined}
         />
       )}
     </div>
