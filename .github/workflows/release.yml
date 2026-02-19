@@ -20,7 +20,7 @@ jobs:
       - name: Set version from run number
         run: npm version "0.${{ github.run_number }}.0" --no-git-tag-version
       - run: npm run build
-      - run: npx electron-builder --win portable
+      - run: npx electron-builder --win nsis
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
