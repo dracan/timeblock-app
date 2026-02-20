@@ -98,6 +98,13 @@ export default function Widget() {
               <div className="widget-next">Next: {nextEntry.title || 'Untitled'} at {formatTime(nextEntry.startMinutes)}</div>
             )}
           </div>
+          <div
+            className="widget-progress"
+            style={{
+              width: `${Math.min(100, Math.max(0, (remainingSeconds / ((entry.endMinutes - entry.startMinutes) * 60)) * 100))}%`,
+              background: entry.color,
+            }}
+          />
         </>
       ) : (
         <div className="widget-empty">

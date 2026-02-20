@@ -17,6 +17,7 @@ body {
 }
 
 .widget {
+  position: relative;
   display: flex;
   align-items: center;
   height: 100%;
@@ -78,6 +79,15 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.widget-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 0 0 10px 10px;
+  transition: width 1s linear;
 }
 
 @keyframes widget-pulse {

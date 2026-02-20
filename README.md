@@ -20,7 +20,7 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Multi-select** — Ctrl+click to select multiple blocks and move, delete, or recolor them together
 - **Ctrl+scroll zoom** — Ctrl+mousewheel zooms the timeline in and out, from a compact day overview to fine-grained placement
 - **"Now Doing" panel** — The bottom of the main window highlights your currently active time block
-- **Floating widget** — Toggle an always-on-top mini window that shows your current time block with a live countdown timer, plus a preview of the next upcoming block. Visible even when the app is in the background. Pulses when the active block changes so you don't miss transitions. Click it to bring the main window to focus
+- **Floating widget** — Toggle an always-on-top mini window that shows your current time block with a live countdown timer, plus a preview of the next upcoming block. A color-matched progress bar at the bottom shrinks as time elapses. Visible even when the app is in the background. Pulses when the active block changes so you don't miss transitions. Click it to bring the main window to focus
 - **Update notifications** — On startup, the app checks GitHub for newer releases. If one is available, a small badge appears in the header; clicking it opens the release page in your browser
 - **Day navigation** — Arrow buttons in the header let you browse past and future days for review and planning. A "Today" button appears when viewing other days to jump back quickly. The current time line and "Now Doing" panel only appear when viewing today
 - **Multi-monitor support** — The main window and floating widget open on whichever monitor the mouse cursor is on
