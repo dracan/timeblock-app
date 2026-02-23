@@ -38,11 +38,13 @@ export function markdownToEntries(md: string): TimeEntry[] {
     const startMinutes = parseTimeStr(startStr);
     const endMinutes = parseTimeStr(endStr);
 
-    // Look for metadata lines after the heading
+    // Look for metadata lines after the heading (limited to before the next heading)
     const afterMatch = md.slice(match.index + match[0].length);
-    const colorMatch = afterMatch.match(/- \*\*Color:\*\* (#[0-9a-fA-F]{6})/);
-    const idMatch = afterMatch.match(/- \*\*ID:\*\* (.+)/);
-    const doneMatch = afterMatch.match(/- \*\*Done:\*\* true/);
+    const nextHeading = afterMatch.indexOf('\n## ');
+    const metadata = nextHeading >= 0 ? afterMatch.slice(0, nextHeading) : afterMatch;
+    const colorMatch = metadata.match(/- \*\*Color:\*\* (#[0-9a-fA-F]{6})/);
+    const idMatch = metadata.match(/- \*\*ID:\*\* (.+)/);
+    const doneMatch = metadata.match(/- \*\*Done:\*\* true/);
 
     entries.push({
       id: idMatch ? idMatch[1].trim() : Date.now().toString(36) + Math.random().toString(36).slice(2, 7),

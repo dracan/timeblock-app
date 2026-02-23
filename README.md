@@ -59,6 +59,13 @@ npm run build
 npm start
 ```
 
+### Run Tests
+
+```bash
+npm test          # Watch mode
+npm run test:run  # Single run
+```
+
 ### Package as Windows Installer
 
 ```bash
@@ -92,6 +99,7 @@ Files are fully readable and editable outside the app.
 - **React 19** — UI framework
 - **TypeScript 5** — Type safety
 - **Vite 6** — Build tooling
+- **Vitest** — Test framework (with React Testing Library)
 
 ## License
 

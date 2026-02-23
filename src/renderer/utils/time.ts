@@ -52,6 +52,16 @@ export function formatDuration(minutes: number): string {
   return `${m}m`;
 }
 
+export function formatCountdown(remainingSeconds: number): string {
+  if (remainingSeconds <= 0) return '0s left';
+  const h = Math.floor(remainingSeconds / 3600);
+  const m = Math.floor((remainingSeconds % 3600) / 60);
+  const s = remainingSeconds % 60;
+  if (h > 0 || m >= 60) return `${h}h ${m}m left`;
+  if (m > 0) return `${m}m ${s}s left`;
+  return `${s}s left`;
+}
+
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }

@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { TimeEntry, WidgetData } from '../types';
-import { formatTime } from '../utils/time';
-
-function formatCountdown(remainingSeconds: number): string {
-  if (remainingSeconds <= 0) return '0s left';
-  const h = Math.floor(remainingSeconds / 3600);
-  const m = Math.floor((remainingSeconds % 3600) / 60);
-  const s = remainingSeconds % 60;
-  if (h > 0 || m >= 60) return `${h}h ${m}m left`;
-  if (m > 0) return `${m}m ${s}s left`;
-  return `${s}s left`;
-}
+import { formatTime, formatCountdown } from '../utils/time';
 
 const DRAG_THRESHOLD = 4;
 
