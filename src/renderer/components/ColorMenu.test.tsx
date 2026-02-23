@@ -1,9 +1,15 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import ColorMenu from './ColorMenu';
 
-const COLORS = [
+const COLORS_HEX = [
   '#4a9eff', '#22c55e', '#f59e0b', '#ef4444', '#a855f7',
   '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
+];
+
+// jsdom converts hex to rgb in style properties
+const COLORS_RGB = [
+  'rgb(74, 158, 255)', 'rgb(34, 197, 94)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(168, 85, 247)',
+  'rgb(236, 72, 153)', 'rgb(6, 182, 212)', 'rgb(249, 115, 22)', 'rgb(132, 204, 22)', 'rgb(99, 102, 241)',
 ];
 
 function renderMenu(overrides: Partial<React.ComponentProps<typeof ColorMenu>> = {}) {
@@ -42,12 +48,9 @@ describe('ColorMenu', () => {
     const swatches = screen.getAllByRole('button').filter((btn) =>
       btn.classList.contains('color-swatch')
     );
-    // jsdom converts hex to rgb, so verify each swatch has a non-empty background
-    swatches.forEach((swatch) => {
-      expect(swatch.style.backgroundColor).toBeTruthy();
+    swatches.forEach((swatch, i) => {
+      expect(swatch.style.backgroundColor).toBe(COLORS_RGB[i]);
     });
-    // Verify the first swatch specifically (#4a9eff → rgb(74, 158, 255))
-    expect(swatches[0].style.backgroundColor).toBe('rgb(74, 158, 255)');
   });
 
   it('clicking a swatch calls onSelect with the correct hex', () => {
@@ -55,8 +58,8 @@ describe('ColorMenu', () => {
     const swatches = screen.getAllByRole('button').filter((btn) =>
       btn.classList.contains('color-swatch')
     );
-    fireEvent.click(swatches[3]); // red (#ef4444)
-    expect(props.onSelect).toHaveBeenCalledWith('#ef4444');
+    fireEvent.click(swatches[3]); // red
+    expect(props.onSelect).toHaveBeenCalledWith(COLORS_HEX[3]);
   });
 
   it('clicking Duplicate calls onDuplicate', () => {

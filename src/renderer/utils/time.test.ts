@@ -1,6 +1,4 @@
 import {
-  DAY_START_HOUR,
-  DAY_END_HOUR,
   TOTAL_HOURS,
   DEFAULT_HOUR_HEIGHT,
   getTotalHeight,
