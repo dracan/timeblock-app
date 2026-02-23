@@ -295,14 +295,12 @@ body {
   font-weight: 500;
   padding: 6px 10px;
   border-radius: 6px;
-  white-space: nowrap;
+  white-space: normal;
   pointer-events: none;
   z-index: 1000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-color);
   max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Done checkbox */
