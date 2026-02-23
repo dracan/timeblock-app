@@ -46,12 +46,23 @@ export default function Widget() {
     const tick = () => {
       const now = new Date();
       const nowSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      setRemainingSeconds(Math.max(0, entry.endMinutes * 60 - nowSeconds));
+      const remaining = entry.endMinutes * 60 - nowSeconds;
+      if (remaining <= 0) {
+        if (nextEntry && nextEntry.startMinutes * 60 <= nowSeconds) {
+          setEntry(nextEntry);
+          setNextEntry(null);
+        } else {
+          setEntry(null);
+        }
+        setRemainingSeconds(0);
+        return;
+      }
+      setRemainingSeconds(remaining);
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [entry]);
+  }, [entry, nextEntry]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return;
