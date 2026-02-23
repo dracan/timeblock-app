@@ -97,5 +97,5 @@ body {
 }
 
 .widget-flash {
-  animation: widget-pulse 400ms ease-in-out 3;
+  animation: widget-pulse 400ms ease-in-out 10;
 }

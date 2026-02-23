@@ -34,7 +34,7 @@ export default function Widget() {
     const newId = entry?.id ?? null;
     if (prevEntryId.current && newId && prevEntryId.current !== newId) {
       setFlashing(true);
-      const timer = setTimeout(() => setFlashing(false), 1200);
+      const timer = setTimeout(() => setFlashing(false), 4000);
       prevEntryId.current = newId;
       return () => clearTimeout(timer);
     }
