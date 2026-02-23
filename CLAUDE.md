@@ -9,9 +9,9 @@ npm run dev      # Dev mode: compiles main process TS, starts Vite dev server (p
 npm run build    # Production build: compiles main process TS + Vite bundle to dist/
 npm start        # Run the built Electron app (requires build first)
 npm run pack     # Build + package as portable Windows exe (output in release/)
+npm test         # Run tests in watch mode (Vitest)
+npm run test:run # Run tests once
 ```
-
-No test runner or linter is configured.
 
 ## Architecture
 

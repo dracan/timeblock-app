@@ -17,6 +17,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run test:run
       - name: Set version from run number
         run: npm version "0.${{ github.run_number }}.0" --no-git-tag-version
       - run: npm run build
