@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import TimeBlock from './TimeBlock';
 import { makeEntry } from '../../test/helpers';
 import { minutesToPixels, DEFAULT_HOUR_HEIGHT } from '../utils/time';
@@ -126,5 +126,100 @@ describe('TimeBlock', () => {
     expect(props.onResizeStart).toHaveBeenCalledWith(expect.anything(), 'top');
     fireEvent.mouseDown(bottomHandle);
     expect(props.onResizeStart).toHaveBeenCalledWith(expect.anything(), 'bottom');
+  });
+
+  describe('tooltip', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('shows tooltip after 1 second hover delay', () => {
+      const entry = makeEntry({ title: 'Hover me', startMinutes: 540, endMinutes: 600 });
+      const { container } = renderBlock({ entry });
+      const block = container.firstChild as HTMLElement;
+
+      // Mouse enter
+      fireEvent.mouseEnter(block, { clientX: 50, clientY: 50 });
+
+      // No tooltip before 1 second
+      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+
+      // Advance 1 second
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      const tooltip = container.querySelector('.time-block-tooltip');
+      expect(tooltip).toBeTruthy();
+      expect(tooltip!.textContent).toContain('Hover me');
+      expect(tooltip!.textContent).toContain('9:00 AM');
+      expect(tooltip!.textContent).toContain('10:00 AM');
+      expect(tooltip!.textContent).toContain('1h');
+    });
+
+    it('does not show tooltip when block is being edited', () => {
+      const entry = makeEntry({ title: 'Editing', startMinutes: 540, endMinutes: 600 });
+      const { container } = renderBlock({ entry, isEditing: true });
+      const block = container.firstChild as HTMLElement;
+
+      fireEvent.mouseEnter(block, { clientX: 50, clientY: 50 });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+    });
+
+    it('does not show tooltip for entries with empty title', () => {
+      const entry = makeEntry({ title: '', startMinutes: 540, endMinutes: 600 });
+      const { container } = renderBlock({ entry });
+      const block = container.firstChild as HTMLElement;
+
+      fireEvent.mouseEnter(block, { clientX: 50, clientY: 50 });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+    });
+
+    it('hides tooltip on mouse leave', () => {
+      const entry = makeEntry({ title: 'Leave me', startMinutes: 540, endMinutes: 600 });
+      const { container } = renderBlock({ entry });
+      const block = container.firstChild as HTMLElement;
+
+      fireEvent.mouseEnter(block, { clientX: 50, clientY: 50 });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(container.querySelector('.time-block-tooltip')).toBeTruthy();
+
+      fireEvent.mouseLeave(block);
+      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+    });
+
+    it('cancels tooltip when mouse leaves before delay completes', () => {
+      const entry = makeEntry({ title: 'Quick leave', startMinutes: 540, endMinutes: 600 });
+      const { container } = renderBlock({ entry });
+      const block = container.firstChild as HTMLElement;
+
+      fireEvent.mouseEnter(block, { clientX: 50, clientY: 50 });
+      // Leave before 1s delay
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      fireEvent.mouseLeave(block);
+
+      // Finish the original timer
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+    });
   });
 });
