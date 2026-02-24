@@ -146,14 +146,14 @@ describe('TimeBlock', () => {
       fireEvent.mouseEnter(block, { clientX: 50, clientY: 50 });
 
       // No tooltip before 1 second
-      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+      expect(document.querySelector('.time-block-tooltip')).toBeNull();
 
       // Advance 1 second
       act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      const tooltip = container.querySelector('.time-block-tooltip');
+      const tooltip = document.querySelector('.time-block-tooltip');
       expect(tooltip).toBeTruthy();
       expect(tooltip!.textContent).toContain('Hover me');
       expect(tooltip!.textContent).toContain('9:00 AM');
@@ -171,7 +171,7 @@ describe('TimeBlock', () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+      expect(document.querySelector('.time-block-tooltip')).toBeNull();
     });
 
     it('does not show tooltip for entries with empty title', () => {
@@ -184,7 +184,7 @@ describe('TimeBlock', () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+      expect(document.querySelector('.time-block-tooltip')).toBeNull();
     });
 
     it('hides tooltip on mouse leave', () => {
@@ -196,10 +196,10 @@ describe('TimeBlock', () => {
       act(() => {
         vi.advanceTimersByTime(1000);
       });
-      expect(container.querySelector('.time-block-tooltip')).toBeTruthy();
+      expect(document.querySelector('.time-block-tooltip')).toBeTruthy();
 
       fireEvent.mouseLeave(block);
-      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+      expect(document.querySelector('.time-block-tooltip')).toBeNull();
     });
 
     it('cancels tooltip when mouse leaves before delay completes', () => {
@@ -219,7 +219,7 @@ describe('TimeBlock', () => {
         vi.advanceTimersByTime(500);
       });
 
-      expect(container.querySelector('.time-block-tooltip')).toBeNull();
+      expect(document.querySelector('.time-block-tooltip')).toBeNull();
     });
   });
 });
