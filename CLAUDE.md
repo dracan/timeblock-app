@@ -73,3 +73,15 @@ Update the README when any of the following apply:
 - The tech stack or major dependencies change
 
 When adding a feature, read through the existing Features list in the README and confirm the new capability is documented there. If you are unsure whether the README needs updating, update it — it is better to over-document than to leave gaps.
+
+## Test Maintenance
+
+**MANDATORY:** After every code change, you MUST update or add tests before committing. Do not treat this as optional. Untested code is a bug.
+
+- **Bug fixes** must include a test that reproduces the bug and verifies the fix.
+- **New features** must include tests covering the primary behavior and key edge cases.
+- **Refactors** must not reduce existing test coverage — run `npm run test:run` and confirm all tests pass.
+
+Tests use Vitest with React Testing Library. Test files live next to their source files using the `.test.ts` / `.test.tsx` naming convention. Shared test helpers are in `src/test/helpers.ts`.
+
+When in doubt about whether tests are needed, add them — it is better to over-test than to ship untested behavior.
