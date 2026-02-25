@@ -30,7 +30,15 @@ A simple desktop app for time-blocking your day. Drag to create blocks, move and
 - **Auto-save** — Changes save automatically after 300ms of inactivity
 - **Markdown storage** — Data is stored as human-readable `.md` files you can open in any text editor
 
-## Getting Started
+## Installation
+
+1. Go to the [Releases](../../releases) page and download the `.exe` file from the latest release
+2. **Unblock the file** — Right-click the downloaded `.exe` → Properties → check "Unblock" at the bottom → OK
+3. **Run the installer** — Double-click the `.exe` to install. This is an installer, not the app itself — it will install TimeBlocker to your user profile and launch it automatically
+
+No admin privileges are required. The app installs per-user and updates can be downloaded from the same Releases page.
+
+## Development Setup
 
 ### Prerequisites
 
