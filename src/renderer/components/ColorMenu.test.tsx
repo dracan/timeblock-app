@@ -96,4 +96,59 @@ describe('ColorMenu', () => {
     fireEvent.mouseDown(document.body);
     expect(props.onClose).toHaveBeenCalledOnce();
   });
+
+  describe('viewport clamping', () => {
+    const MENU_WIDTH = 160;
+    const MENU_HEIGHT = 200;
+
+    beforeEach(() => {
+      // Mock getBoundingClientRect to return consistent menu dimensions
+      vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue({
+        width: MENU_WIDTH,
+        height: MENU_HEIGHT,
+        top: 0,
+        left: 0,
+        right: MENU_WIDTH,
+        bottom: MENU_HEIGHT,
+        x: 0,
+        y: 0,
+        toJSON: () => {},
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('flips left when menu would overflow right edge', () => {
+      // Window is 800px wide, menu at x=700 would overflow (700+160>800)
+      Object.defineProperty(window, 'innerWidth', { value: 800, writable: true });
+      Object.defineProperty(window, 'innerHeight', { value: 600, writable: true });
+
+      const { container } = renderMenu({ x: 700, y: 100 });
+      const menu = container.querySelector('.color-menu') as HTMLElement;
+      expect(menu.style.left).toBe(`${700 - MENU_WIDTH}px`);
+      expect(menu.style.top).toBe('100px');
+    });
+
+    it('flips up when menu would overflow bottom edge', () => {
+      Object.defineProperty(window, 'innerWidth', { value: 800, writable: true });
+      Object.defineProperty(window, 'innerHeight', { value: 600, writable: true });
+
+      const { container } = renderMenu({ x: 100, y: 500 });
+      const menu = container.querySelector('.color-menu') as HTMLElement;
+      expect(menu.style.left).toBe('100px');
+      expect(menu.style.top).toBe(`${500 - MENU_HEIGHT}px`);
+    });
+
+    it('keeps position when menu fits within viewport', () => {
+      Object.defineProperty(window, 'innerWidth', { value: 800, writable: true });
+      Object.defineProperty(window, 'innerHeight', { value: 600, writable: true });
+
+      const { container } = renderMenu({ x: 100, y: 100 });
+      const menu = container.querySelector('.color-menu') as HTMLElement;
+      expect(menu.style.left).toBe('100px');
+      expect(menu.style.top).toBe('100px');
+    });
+  });
 });

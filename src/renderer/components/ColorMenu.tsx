@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const COLORS = [
   '#4a9eff', // blue
@@ -25,6 +25,23 @@ interface ColorMenuProps {
 
 export default function ColorMenu({ x, y, onSelect, onDuplicate, onDelete, onClose, onSendToToday }: ColorMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const [adjusted, setAdjusted] = useState({ left: x, top: y });
+
+  useLayoutEffect(() => {
+    if (!menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    let left = x;
+    let top = y;
+    if (x + rect.width > window.innerWidth) {
+      left = x - rect.width;
+    }
+    if (y + rect.height > window.innerHeight) {
+      top = y - rect.height;
+    }
+    if (left !== adjusted.left || top !== adjusted.top) {
+      setAdjusted({ left, top });
+    }
+  }, [x, y]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -42,11 +59,10 @@ export default function ColorMenu({ x, y, onSelect, onDuplicate, onDelete, onClo
     };
   }, [onClose]);
 
-  // Adjust position to stay within viewport
   const style: React.CSSProperties = {
     position: 'fixed',
-    left: x,
-    top: y,
+    left: adjusted.left,
+    top: adjusted.top,
     zIndex: 1000,
   };
 
