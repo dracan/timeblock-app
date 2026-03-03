@@ -4,9 +4,9 @@ import App from './App';
 // Mock Timeline to avoid its complex DOM/interaction logic
 vi.mock('./components/Timeline', () => ({
   default: (props: any) => (
-    <div data-testid="timeline">
+    <div data-testid="timeline" data-today-str={props.todayStr}>
       {props.days.map((d: any) => (
-        <div key={d.dateStr} data-testid={`day-${d.dateStr}`}>
+        <div key={d.dateStr} data-testid={`day-${d.dateStr}`} data-is-today={d.isToday}>
           {d.entries.length} entries
         </div>
       ))}
@@ -145,5 +145,116 @@ describe('App', () => {
     // Column headers should appear for each day
     const headers = document.querySelectorAll('.day-column-header');
     expect(headers.length).toBe(3);
+  });
+
+  describe('midnight crossing', () => {
+    it('auto-advances to new today when midnight passes while viewing today', async () => {
+      // Mount at 23:59 on Jan 15
+      vi.setSystemTime(new Date(2025, 0, 15, 23, 59, 0));
+      render(<App />);
+      await act(async () => {});
+
+      // Should show Jan 15
+      expect(screen.getByText(/Jan 15/)).toBeInTheDocument();
+      expect(screen.getByTestId('day-2025-01-15').dataset.isToday).toBe('true');
+
+      // Advance past midnight — advanceTimersByTime both fires the timeout
+      // AND advances the fake clock so new Date() returns Jan 16
+      await act(async () => {
+        vi.advanceTimersByTime(60_100); // 1 minute + 100ms covers the midnight timeout
+      });
+      // Flush async state updates (loadAll triggered by todayStr change)
+      await act(async () => {});
+
+      // Should now show Jan 16 (Thursday) — auto-advanced
+      expect(screen.getByText(/Jan 16/)).toBeInTheDocument();
+      expect(screen.getByTestId('day-2025-01-16').dataset.isToday).toBe('true');
+    });
+
+    it('does not auto-advance if user navigated to a different date', async () => {
+      // Mount at 23:59 on Jan 15
+      vi.setSystemTime(new Date(2025, 0, 15, 23, 59, 0));
+      render(<App />);
+      await act(async () => {});
+
+      // Navigate to Jan 14 (a different date)
+      fireEvent.click(screen.getByTitle('Previous day'));
+      expect(screen.getByText(/Jan 14/)).toBeInTheDocument();
+
+      // Advance past midnight
+      await act(async () => {
+        vi.advanceTimersByTime(60_100);
+      });
+      await act(async () => {});
+
+      // Should still show Jan 14 — did NOT auto-advance
+      expect(screen.getByText(/Jan 14/)).toBeInTheDocument();
+    });
+
+    it('Today button navigates to the real new today after midnight', async () => {
+      // Mount at 23:59 on Jan 15
+      vi.setSystemTime(new Date(2025, 0, 15, 23, 59, 0));
+      render(<App />);
+      await act(async () => {});
+
+      // Navigate away so Today button appears
+      fireEvent.click(screen.getByTitle('Previous day'));
+      expect(screen.getByText('Today')).toBeInTheDocument();
+
+      // Advance past midnight
+      await act(async () => {
+        vi.advanceTimersByTime(60_100);
+      });
+      await act(async () => {});
+
+      // Click Today — should go to Jan 16, not stale Jan 15
+      fireEvent.click(screen.getByText('Today'));
+      await act(async () => {});
+      expect(screen.getByText(/Jan 16/)).toBeInTheDocument();
+    });
+
+    it('updates todayStr for widget after midnight', async () => {
+      // Mount at 23:59 on Jan 15 with entries for both days
+      vi.setSystemTime(new Date(2025, 0, 15, 23, 59, 0));
+      const md15 = `# Wednesday, January 15, 2025\n\n## 23:00 - 23:59 | Night Task\n- **Color:** #4a9eff\n- **ID:** night-1\n\n`;
+      const md16 = `# Thursday, January 16, 2025\n\n## 00:00 - 01:00 | Morning Task\n- **Color:** #22c55e\n- **ID:** morning-1\n\n`;
+      localStorage.setItem('day-2025-01-15', md15);
+      localStorage.setItem('day-2025-01-16', md16);
+      render(<App />);
+      await act(async () => {});
+
+      // todayStr should be 2025-01-15
+      expect(screen.getByTestId('timeline').dataset.todayStr).toBe('2025-01-15');
+
+      // Advance past midnight
+      await act(async () => {
+        vi.advanceTimersByTime(60_100);
+      });
+      await act(async () => {});
+
+      // todayStr should now be 2025-01-16
+      expect(screen.getByTestId('timeline').dataset.todayStr).toBe('2025-01-16');
+    });
+
+    it('detects date change on window focus', async () => {
+      // Mount at 23:00 on Jan 15
+      vi.setSystemTime(new Date(2025, 0, 15, 23, 0, 0));
+      render(<App />);
+      await act(async () => {});
+
+      expect(screen.getByTestId('timeline').dataset.todayStr).toBe('2025-01-15');
+
+      // Simulate time jumping past midnight (e.g., laptop was sleeping)
+      // then user focuses the window
+      vi.setSystemTime(new Date(2025, 0, 16, 8, 0, 0));
+      await act(async () => {
+        window.dispatchEvent(new Event('focus'));
+      });
+      await act(async () => {});
+
+      expect(screen.getByTestId('timeline').dataset.todayStr).toBe('2025-01-16');
+      // Auto-advanced since user was on "today"
+      expect(screen.getByText(/Jan 16/)).toBeInTheDocument();
+    });
   });
 });

@@ -34,8 +34,43 @@ export default function App() {
   const [currentMinutes, setCurrentMinutes] = useState(getCurrentMinutes);
   const saveTimeouts = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  const realToday = useMemo(() => new Date(), []);
+  const [realToday, setRealToday] = useState(() => new Date());
   const todayStr = getDateStr(realToday);
+
+  // Detect date changes via midnight timeout, window focus, and visibility change.
+  // Also auto-advances selectedDate if the user was viewing "today" when midnight crossed.
+  useEffect(() => {
+    const checkDateChange = () => {
+      const now = new Date();
+      setRealToday(prev => {
+        if (isSameDay(prev, now)) return prev;
+        // Date changed — auto-advance selectedDate if user was viewing old today
+        setSelectedDate(sel => isSameDay(sel, prev) ? new Date(now) : sel);
+        return now;
+      });
+    };
+
+    // 1. Timeout at midnight (+ 100ms buffer)
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const msUntilMidnight = tomorrow.getTime() - now.getTime() + 100;
+    const timeoutId = setTimeout(checkDateChange, msUntilMidnight);
+
+    // 2. Window focus (user returns to app after it was in background)
+    window.addEventListener('focus', checkDateChange);
+
+    // 3. Visibility change (handles sleep/wake, tab switching)
+    const onVisChange = () => {
+      if (document.visibilityState === 'visible') checkDateChange();
+    };
+    document.addEventListener('visibilitychange', onVisChange);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('focus', checkDateChange);
+      document.removeEventListener('visibilitychange', onVisChange);
+    };
+  }, [realToday]);
 
   // Compute visible dates (selectedDate is the leftmost day)
   const visibleDates = useMemo(() => {
@@ -171,7 +206,9 @@ export default function App() {
   }, []);
 
   const goToToday = useCallback(() => {
-    setSelectedDate(new Date());
+    const now = new Date();
+    setRealToday(prev => isSameDay(prev, now) ? prev : now);
+    setSelectedDate(now);
   }, []);
 
   // Build DayColumn[] for Timeline
