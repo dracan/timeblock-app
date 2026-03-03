@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { computeDragBounds, DragStartState } from './widgetDrag';
 
 let mainWindow: BrowserWindow | null = null;
 let widgetWindow: BrowserWindow | null = null;
@@ -144,21 +145,18 @@ ipcMain.on('focus-main-window', () => {
   }
 });
 
-let widgetDragStart: { mouseX: number; mouseY: number; winX: number; winY: number } | null = null;
+let widgetDragStart: DragStartState | null = null;
 
 ipcMain.on('widget-drag-start', (_event, screenX: number, screenY: number) => {
   if (widgetWindow) {
-    const [winX, winY] = widgetWindow.getPosition();
-    widgetDragStart = { mouseX: screenX, mouseY: screenY, winX, winY };
+    const { x, y, width, height } = widgetWindow.getBounds();
+    widgetDragStart = { mouseX: screenX, mouseY: screenY, winX: x, winY: y, winW: width, winH: height };
   }
 });
 
 ipcMain.on('widget-drag-move', (_event, screenX: number, screenY: number) => {
   if (widgetWindow && widgetDragStart) {
-    widgetWindow.setPosition(
-      widgetDragStart.winX + screenX - widgetDragStart.mouseX,
-      widgetDragStart.winY + screenY - widgetDragStart.mouseY
-    );
+    widgetWindow.setBounds(computeDragBounds(widgetDragStart, screenX, screenY));
   }
 });
 
