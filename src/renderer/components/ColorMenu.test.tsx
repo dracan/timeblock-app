@@ -3,13 +3,13 @@ import ColorMenu from './ColorMenu';
 
 const COLORS_HEX = [
   '#4a9eff', '#22c55e', '#f59e0b', '#ef4444', '#a855f7',
-  '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
+  '#ec4899', '#9ca3af', '#f97316', '#84cc16', '#6366f1',
 ];
 
 // jsdom converts hex to rgb in style properties
 const COLORS_RGB = [
   'rgb(74, 158, 255)', 'rgb(34, 197, 94)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(168, 85, 247)',
-  'rgb(236, 72, 153)', 'rgb(6, 182, 212)', 'rgb(249, 115, 22)', 'rgb(132, 204, 22)', 'rgb(99, 102, 241)',
+  'rgb(236, 72, 153)', 'rgb(156, 163, 175)', 'rgb(249, 115, 22)', 'rgb(132, 204, 22)', 'rgb(99, 102, 241)',
 ];
 
 function renderMenu(overrides: Partial<React.ComponentProps<typeof ColorMenu>> = {}) {
