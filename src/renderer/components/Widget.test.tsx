@@ -210,6 +210,27 @@ describe('Widget', () => {
     expect((window as any).electronAPI.focusMainWindow).toHaveBeenCalled();
   });
 
+  it('accent bar uses entry color when >= 5 minutes remaining', () => {
+    // 9:30 AM — 30 minutes remaining on a 9:00-10:00 block
+    render(<Widget />);
+    const entry = makeEntry({ startMinutes: 540, endMinutes: 600, color: '#4a9eff' });
+    sendEntry(entry);
+
+    const accent = document.querySelector('.widget-accent') as HTMLElement;
+    expect(accent.style.background).toBe('rgb(74, 158, 255)');
+  });
+
+  it('accent bar turns red when < 5 minutes remaining', () => {
+    // 9:56 AM — 4 minutes remaining
+    vi.setSystemTime(new Date(2024, 0, 15, 9, 56, 0));
+    render(<Widget />);
+    const entry = makeEntry({ startMinutes: 540, endMinutes: 600, color: '#4a9eff' });
+    sendEntry(entry);
+
+    const accent = document.querySelector('.widget-accent') as HTMLElement;
+    expect(accent.style.background).toBe('rgb(229, 57, 53)');
+  });
+
   it('drag beyond threshold does not call focusMainWindow', () => {
     render(<Widget />);
     const entry = makeEntry({ startMinutes: 540, endMinutes: 600 });

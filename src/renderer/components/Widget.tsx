@@ -88,7 +88,7 @@ export default function Widget() {
     <div className={`widget${flashing ? ' widget-flash' : ''}`} onMouseDown={handleMouseDown}>
       {entry ? (
         <>
-          <div className="widget-accent" style={{ background: entry.color }} />
+          <div className="widget-accent" style={{ background: remainingSeconds < 300 ? '#e53935' : entry.color }} />
           <div className="widget-info">
             <div className="widget-title">{entry.title || 'Untitled'}</div>
             <div className="widget-time">
